@@ -1,8 +1,6 @@
-package com.trifork.tim.models
+package com.trifork.timandroid.models
 
 import android.net.Uri
-
-
 
 class TIMConfiguration(
     val timBaseUrl: String,
