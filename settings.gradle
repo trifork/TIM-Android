@@ -8,4 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "TIM-Android"
 include ':app'
-include ':TIM-Android'
+include ':TIM-Android-lib'
