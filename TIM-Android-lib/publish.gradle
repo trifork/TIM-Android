@@ -1,0 +1,14 @@
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPubication) {
+
+                from components.release
+
+                
+
+            }
+        }
+    }
+}
