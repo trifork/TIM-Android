@@ -140,10 +140,6 @@ class AppAuthController(
         authState = null
     }
 
-    override fun handleRedirect(url: String): Boolean {
-        TODO("Not yet implemented")
-    }
-
     /**
      *
      */
