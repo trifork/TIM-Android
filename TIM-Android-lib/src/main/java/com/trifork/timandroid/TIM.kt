@@ -50,10 +50,12 @@ object TIM {
         )
 
         val storage = TIMDataStorageInternal(encryptedStorage)
-        val auth = TIMAuthInternal(
+        _auth = TIMAuthInternal(
             storage,
-            AppAuthController(config.oidcConfig,)
+            AppAuthController(config.oidcConfig, context)
         )
+
+        _storage = storage
     }
 
     /**
