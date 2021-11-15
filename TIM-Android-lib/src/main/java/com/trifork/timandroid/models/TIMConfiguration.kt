@@ -1,16 +1,25 @@
 package com.trifork.timandroid.models
 
-import android.net.Uri
+import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
+import com.trifork.timencryptedstorage.keyservice.TIMKeyService
+import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
+import com.trifork.timencryptedstorage.models.keyservice.TIMKeyServiceConfiguration
+import com.trifork.timencryptedstorage.securestorage.TIMSecureStorage
+
+
+/**
+ * Combined configuration for AppAuth and TIMEncryptedStorage
+ * @param oidcConfig The OIDC configuration
+ * @param keyServiceConfig The [TIMKeyService]
+ * @param encryptionMethod The encryption method used by TIM (under the hood it's used by [TIMSecureStorage]). Recommended method is [TIMESEncryptionMethod.AesGcm]
+ */
 
 class TIMConfiguration(
-    val timBaseUrl: String,
-    val realm: String,
-    val clientId: String,
-    val redirectUri: Uri,
-    val scopes: List<String>,
-    // TODO: Add encryption method as constructor param - MFJ
-    // TODO: Add key service version param - MFJ
+    val oidcConfig: TIMOpenIdConnectConfiguration,
+    val keyServiceConfig: TIMKeyServiceConfiguration,
+    val encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm
 ) {
 
 
 }
+
