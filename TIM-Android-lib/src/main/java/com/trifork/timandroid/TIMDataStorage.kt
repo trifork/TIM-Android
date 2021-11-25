@@ -1,5 +1,6 @@
 package com.trifork.timandroid
 
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
 import kotlinx.coroutines.CoroutineScope
@@ -9,7 +10,7 @@ interface TIMDataStorage {
     /**
      * The set of user ids which there are refresh tokens stored for.
      */
-    val availableUserids: Set<String>
+    val availableUserIds: Set<String>
 
     /**
      * Checks whether a [userId] has a stored refresh token
@@ -46,7 +47,7 @@ interface TIMDataStorage {
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String)
+    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : TIMResult<Unit, TIMError>
 
     /**
      * Stores a refresh

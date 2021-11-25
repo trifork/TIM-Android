@@ -1,15 +1,17 @@
 package com.trifork.timandroid.internal
 
 import android.content.Intent
-import com.trifork.timandroid.JWT
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.TIMAuth
 import com.trifork.timandroid.TIMDataStorage
 import com.trifork.timandroid.appauth.OpenIDConnectController
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.toTIMSucces
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 
 internal class TIMAuthInternal(
     private val storage: TIMDataStorage,
@@ -39,24 +41,29 @@ internal class TIMAuthInternal(
         userId: String,
         password: String,
         storeNewRefreshToken: Boolean
-    ): TIMResult<JWT, TIMError> {
+    ): Deferred<TIMResult<JWT, TIMError>> = scope.async {
         val storedTokenResult = storage.getStoredRefreshToken(userId, password)
-        val refreshToken = when(storedTokenResult) {
+        val refreshToken = when (storedTokenResult) {
             is TIMResult.Success -> storedTokenResult.value
-            is TIMResult.Failure -> return storedTokenResult
+            is TIMResult.Failure -> return@async storedTokenResult
         }
 
-        val silentLoginResult = openIdController.silentLogin(refreshToken)
+        val silentLoginResult = openIdController.silentLogin(scope, refreshToken).await()
 
-        val newRefreshToken = when(silentLoginResult) {
+        val accessToken = when (silentLoginResult) {
             is TIMResult.Success -> silentLoginResult.value
-            is TIMResult.Failure -> return silentLoginResult
+            is TIMResult.Failure -> return@async silentLoginResult
         }
 
-        if(storeNewRefreshToken) {
-
+        return@async if (storeNewRefreshToken) {
+            val storedToken = storage.storeRefreshTokenWithExistingPassword(scope, refreshToken, password)
+            when (storedToken) {
+                is TIMResult.Success -> accessToken.toTIMSucces()
+                is TIMResult.Failure -> storedToken
+            }
+        } else {
+            accessToken.toTIMSucces()
         }
-        TODO("Not yet implemented")
     }
 
     override fun loginWithBiometricId() {

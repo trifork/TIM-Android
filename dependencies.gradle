@@ -29,11 +29,12 @@ ext {
     appAuth = "net.openid:appauth:$appauth_version"
     //endregion
 
+    //TODO(Instrumented test is not yet supported in jUnit5? Therefore we still use 4)
     //region JUnit
-    jUnit5_version = "5.7.2"
+    jUnit4_version = "4.13.2"
     jUnit = [
-            jupiterApi   : "org.junit.jupiter:junit-jupiter-api:$jUnit5_version",
-            jupiterEngine: "org.junit.jupiter:junit-jupiter-engine:$jUnit5_version"
+            junit : "junit:junit:$jUnit4_version",
+
     ]
     //endregion
 }

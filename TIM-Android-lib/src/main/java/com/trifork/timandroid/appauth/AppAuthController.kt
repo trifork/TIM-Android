@@ -3,7 +3,7 @@ package com.trifork.timandroid.appauth
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import com.trifork.timandroid.JWT
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.models.TIMResult
@@ -191,14 +191,11 @@ class AppAuthController(
         }
     }
 
-    private fun <T> handleAppAuthCallback(
-        value: T?,
-        error: AuthorizationException?,
-        fallbackError: TIMAuthError
-    ): TIMResult<T, TIMAuthError> = when {
-        error != null -> TIMAuthError.mapAppAuthError(error)
-        value != null -> value.toTIMSucces()
-        else -> fallbackError.toTIMFailure()
-    }
+    private fun <T> handleAppAuthCallback(value: T?, error: AuthorizationException?, fallbackError: TIMAuthError): TIMResult<T, TIMAuthError> =
+        when {
+            error != null -> TIMAuthError.mapAppAuthError(error)
+            value != null -> value.toTIMSucces()
+            else -> fallbackError.toTIMFailure()
+        }
 
 }

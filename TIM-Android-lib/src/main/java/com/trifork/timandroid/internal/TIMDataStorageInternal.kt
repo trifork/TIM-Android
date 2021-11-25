@@ -1,11 +1,14 @@
 package com.trifork.timandroid.internal
 
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.TIMDataStorage
+import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.StorageKey
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.errors.TIMSecureStorageError
 import com.trifork.timencryptedstorage.models.toTIMSucces
+import kotlinx.coroutines.CoroutineScope
 
 internal sealed class TIMDataStorageKey {
     class KeyId(val userId: String) : TIMDataStorageKey()
@@ -27,13 +30,12 @@ internal sealed class TIMDataStorageKey {
     }
 }
 
-
 internal class TIMDataStorageInternal(
     private val encryptedStorage: TIMEncryptedStorage
 ) : TIMDataStorage {
 
     //region Available user ids
-    override val availableUserids: Set<String>
+    override val availableUserIds: Set<String>
         get() {
             val result = get<Set<String>?>(TIMDataStorageKey.AvailableUserIds) {
                 TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)")
@@ -43,7 +45,7 @@ internal class TIMDataStorageInternal(
         }
 
     private fun addAvailableUserId(userId: String) {
-        val availableIds = availableUserids.toMutableSet()
+        val availableIds = availableUserIds.toMutableSet()
         availableIds.add(userId)
         store(
             TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)"),
@@ -52,7 +54,7 @@ internal class TIMDataStorageInternal(
     }
 
     private fun removeAvailableUserId(userId: String) {
-        val availableIds = availableUserids.toMutableSet()
+        val availableIds = availableUserIds.toMutableSet()
         availableIds.remove(userId)
         store(
             TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)"),
@@ -60,6 +62,47 @@ internal class TIMDataStorageInternal(
         )
     }
     //endregion
+
+
+    override fun hasRefreshToken(userId: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun hasBiometricAccessForRefreshToken(userId: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun disableBiometricAccessForRefreshToken(userId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getStoredRefreshToken(userId: String, password: String): TIMResult<JWT, TIMError> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getStoredRefreshTokenViaBiometric(userId: String) {
+        TODO("Not yet implemented")
+    }
+
+    //TODO(Figure out if we need TIMResult as return value here)
+    override fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String): TIMResult<Unit, TIMError> {
+        TODO("Not yet implemented")
+    }
+
+    override fun storeRefreshTokenWithNewPassword(refreshToken: JWT, password: String) {
+        TODO("Not yet implemented")
+       // TIMDataStorageKey.RefreshToken(refreshToken)
+
+     //   encryptedStorage.storeWithNewKey(scope, password, JWT)
+    }
+
+    override fun enableBiometricAccessForRefreshToken(password: String, userId: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun storeRefreshTokenWithLongSecret(refreshToken: JWT, longSecret: String): TIMResult<Unit, TIMError> {
+        TODO("Not yet implemented")
+    }
 
     //region NON-SECURE private read/write helpers
     private fun <T> get(
@@ -79,7 +122,7 @@ internal class TIMDataStorageInternal(
     //endregion
 
     override fun clear(userId: String) {
-        disableCurrentBiometricAccess(userId)
+        //TODO(disableCurrentBiometricAccess(userId))
 
         TIMDataStorageKey.getUserSpecificCases(userId).forEach {
             encryptedStorage.remove(it.storageKey)

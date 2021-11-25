@@ -9,7 +9,7 @@ import com.trifork.timencryptedstorage.TIMEncryptedStorage
 import com.trifork.timencryptedstorage.keyservice.TIMKeyServiceImpl
 import com.trifork.timencryptedstorage.securestorage.TIMEncryptedSharedPreferences
 
-// TODO: In the README.md it should contain a section about the wierd quirk between redirectUri in BuildConfig and in Manifest ("app:/" vs "app") - MFJ (20/09/2021)
+// TODO: In the README.md it should contain a section about the weird quirk between redirectUri in BuildConfig and in Manifest ("app:/" vs "app") - MFJ (20/09/2021)
 
 object TIM {
 
@@ -17,8 +17,7 @@ object TIM {
     val storage: TIMDataStorage
         @Throws(RuntimeException::class)
         get() =
-            _storage
-                ?: throw RuntimeException("Accessing TIM.storage before calling TIM.configure(...) is not allowed!")
+            _storage ?: throw RuntimeException("Accessing TIM.storage before calling TIM.configure(...) is not allowed!")
 
     private var _auth: TIMAuth? = null
     val auth: TIMAuth

@@ -1,6 +1,7 @@
 package com.trifork.timandroid
 
 import android.content.Intent
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
@@ -50,7 +51,7 @@ interface TIMAuth {
      * @param storeNewRefreshToken Whether to store the new refresh token. Most use cases will want this set to true
      * @return A result containing the access token if login was successful or a result with an error indicating what went wrong
      */
-    fun loginWithPassword(scope: CoroutineScope, userId: String, password: String, storeNewRefreshToken: Boolean): TIMResult<JWT, TIMError>
+    fun loginWithPassword(scope: CoroutineScope, userId: String, password: String, storeNewRefreshToken: Boolean): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (20/09/2021)

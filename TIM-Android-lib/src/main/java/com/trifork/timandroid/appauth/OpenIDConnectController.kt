@@ -2,7 +2,7 @@ package com.trifork.timandroid.appauth
 
 import android.app.Activity
 import android.content.Intent
-import com.trifork.timandroid.JWT
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timencryptedstorage.models.TIMResult
 import kotlinx.coroutines.CoroutineScope
