@@ -18,6 +18,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
+        //TODO(Necessary for test to run. But causes the sdk to catch redirects. Move this to testOptions? or change to some invalid value?)
         android.defaultConfig.manifestPlaceholders = ['appAuthRedirectScheme': 'test']
     }
 

@@ -97,7 +97,7 @@ class AppAuthController(
         )
             .setScopes(config.scopes)
             .setGrantType(GrantTypeValues.REFRESH_TOKEN)
-            .setRefreshToken(refreshToken)
+            .setRefreshToken(refreshToken.token)
             .build()
 
         val tokenResponseResult = performTokenRequest(scope, tokenRequest).await()
@@ -133,7 +133,12 @@ class AppAuthController(
     }
 
     override fun refreshToken(): JWT? {
-        return authState?.refreshToken
+        val refreshToken = authState?.refreshToken
+        return if (refreshToken != null) {
+            JWT.newInstance(refreshToken)
+        } else {
+            null
+        }
     }
 
     override fun logout() {

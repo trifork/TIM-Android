@@ -90,10 +90,17 @@ internal class TIMDataStorageInternal(
     }
 
     override fun storeRefreshTokenWithNewPassword(refreshToken: JWT, password: String) {
-        TODO("Not yet implemented")
-       // TIMDataStorageKey.RefreshToken(refreshToken)
+        /*
+        val userId = refreshToken.userId
+        if(userId != null) {
+            val id = TIMDataStorageKey.RefreshToken(userId).storageKey
 
-     //   encryptedStorage.storeWithNewKey(scope, password, JWT)
+            encryptedStorage.storeWithNewKey(scope, id, refreshToken.tok password, )
+
+        }
+
+        */
+        TODO("Not yet implemented")
     }
 
     override fun enableBiometricAccessForRefreshToken(password: String, userId: String) {
