@@ -2,6 +2,7 @@ package com.trifork.timandroid.internal
 
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.TIMDataStorage
+import com.trifork.timandroid.helpers.convert
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.StorageKey
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
@@ -9,6 +10,7 @@ import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.errors.TIMSecureStorageError
 import com.trifork.timencryptedstorage.models.toTIMSucces
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 
 internal sealed class TIMDataStorageKey {
     class KeyId(val userId: String) : TIMDataStorageKey()
@@ -47,6 +49,7 @@ internal class TIMDataStorageInternal(
     private fun addAvailableUserId(userId: String) {
         val availableIds = availableUserIds.toMutableSet()
         availableIds.add(userId)
+
         store(
             TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)"),
             TIMDataStorageKey.AvailableUserIds
@@ -89,18 +92,24 @@ internal class TIMDataStorageInternal(
         TODO("Not yet implemented")
     }
 
-    override fun storeRefreshTokenWithNewPassword(refreshToken: JWT, password: String) {
-        /*
+    override fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) = scope.async {
         val userId = refreshToken.userId
-        if(userId != null) {
-            val id = TIMDataStorageKey.RefreshToken(userId).storageKey
+        val id = TIMDataStorageKey.RefreshToken(userId).storageKey
 
-            encryptedStorage.storeWithNewKey(scope, id, refreshToken.tok password, )
+        val storeWithNewKeyResult = encryptedStorage.storeWithNewKey(scope, id, refreshToken.token.convert, password).await()
 
+        //TODO(Add error handling when storeWithNewKey throws errors correctly)
+        when (storeWithNewKeyResult) {
+            is TIMResult.Success -> {
+                disableBiometricAccessForRefreshToken(refreshToken.userId)
+                store(storeWithNewKeyResult.value.keyId.convert, TIMDataStorageKey.KeyId(refreshToken.userId))
+            }
+            else -> TODO("TIMResult Failure return@async storeWithNewKeyResult")
         }
 
-        */
-        TODO("Not yet implemented")
+        addAvailableUserId(refreshToken.userId)
+
+        return@async Unit.toTIMSucces()
     }
 
     override fun enableBiometricAccessForRefreshToken(password: String, userId: String) {

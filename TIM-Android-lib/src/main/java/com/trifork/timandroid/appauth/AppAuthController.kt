@@ -56,28 +56,28 @@ class AppAuthController(
         val response = AuthorizationResponse.fromIntent(dataIntent)
         val error = AuthorizationException.fromIntent(dataIntent)
 
-        val authReponse = handleAppAuthCallback(
+        val authResponse = handleAppAuthCallback(
             response,
             error,
             fallbackError = TIMAuthError.AppAuthFailed("No valid response or error encountered when unwrapping registration result intent data")
         )
 
-        when (authReponse) {
+        when (authResponse) {
             is TIMResult.Success -> {
                 val tokenRequest: TIMResult<TokenResponse, TIMAuthError> = performTokenRequest(
                     this,
-                    authReponse.value.createTokenExchangeRequest()
+                    authResponse.value.createTokenExchangeRequest()
                 ).await()
 
                 when (tokenRequest) {
                     is TIMResult.Success -> {
-                        authState = AuthState(authReponse.value, tokenRequest.value, error)
+                        authState = AuthState(authResponse.value, tokenRequest.value, error)
                         Unit.toTIMSucces()
                     }
                     is TIMResult.Failure -> tokenRequest
                 }
             }
-            is TIMResult.Failure -> return@async authReponse
+            is TIMResult.Failure -> return@async authResponse
         }
     }
 

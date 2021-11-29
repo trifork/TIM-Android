@@ -4,6 +4,7 @@ import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 
 interface TIMDataStorage {
 
@@ -52,7 +53,7 @@ interface TIMDataStorage {
     /**
      * Stores a refresh
      */
-    fun storeRefreshTokenWithNewPassword(refreshToken: JWT, password: String)
+    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)

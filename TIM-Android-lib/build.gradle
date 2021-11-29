@@ -63,7 +63,8 @@ dependencies {
     //endregion
 
     //region TIM
-    api TIMEncryptedStorage
+    debugApi project(':TIMEncryptedStorage-Android')
+    releaseApi TIMEncryptedStorage
     //endregion
 
     //region AppAuth

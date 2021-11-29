@@ -15,3 +15,11 @@ val JWTString.userId: String?
 
 val JWTString.issuer: String?
     get() = JWTDecoder.decode(this)[ISSUER_KEY] as? String
+
+private val CHARSET = Charsets.UTF_8
+
+val String.convert: ByteArray
+    get() = this.toByteArray(CHARSET)
+
+//TODO(Do we want this to be on a companion object so we can have it linked to String.convert?)
+fun convert(byteArray: ByteArray) : String = byteArray.toString(CHARSET)
