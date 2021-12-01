@@ -43,11 +43,4 @@ class JWTStringTest {
         val jwtWithoutUserId : JWTString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTUxNjIzOTAyMn0.yOZC0rjfSopcpJ-d3BWE8-BkoLR_SCqPdJpq8Wn-1Mc"
         assertNotNull(jwtWithoutUserId)
     }
-
-    @Test
-    fun string_convert() {
-        val byteArray = simpleAccessToken.convert
-        val accessToken = convert(byteArray)
-        assertEquals(accessToken, simpleAccessToken)
-    }
 }

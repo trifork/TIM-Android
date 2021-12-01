@@ -1,8 +1,10 @@
 package com.trifork.timandroid.internal
 
+import android.util.Log
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.TIMDataStorage
-import com.trifork.timandroid.helpers.convert
+import com.trifork.timandroid.helpers.ext.convertToByteArray
+import com.trifork.timandroid.helpers.ext.convertToString
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.StorageKey
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
@@ -11,6 +13,9 @@ import com.trifork.timencryptedstorage.models.errors.TIMSecureStorageError
 import com.trifork.timencryptedstorage.models.toTIMSucces
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.protobuf.*
 
 internal sealed class TIMDataStorageKey {
     class KeyId(val userId: String) : TIMDataStorageKey()
@@ -40,8 +45,7 @@ internal class TIMDataStorageInternal(
     override val availableUserIds: Set<String>
         get() {
             val result = get<Set<String>?>(TIMDataStorageKey.AvailableUserIds) {
-                TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)")
-                null
+                ProtoBuf.decodeFromByteArray(it)
             }
             return (result as? TIMResult.Success)?.value ?: emptySet()
         }
@@ -49,9 +53,8 @@ internal class TIMDataStorageInternal(
     private fun addAvailableUserId(userId: String) {
         val availableIds = availableUserIds.toMutableSet()
         availableIds.add(userId)
-
         store(
-            TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)"),
+            ProtoBuf.encodeToByteArray(availableIds),
             TIMDataStorageKey.AvailableUserIds
         )
     }
@@ -60,7 +63,7 @@ internal class TIMDataStorageInternal(
         val availableIds = availableUserIds.toMutableSet()
         availableIds.remove(userId)
         store(
-            TODO("Figure out how to convert to a valid type for EncryptedStorage (Potentially Serialization)"),
+            ProtoBuf.encodeToByteArray(availableIds),
             TIMDataStorageKey.AvailableUserIds
         )
     }
@@ -76,7 +79,11 @@ internal class TIMDataStorageInternal(
     }
 
     override fun disableBiometricAccessForRefreshToken(userId: String) {
-        TODO("Not yet implemented")
+        val keyIdResult = get(TIMDataStorageKey.KeyId(userId)) {
+            it.convertToString()
+        }
+
+        if (keyIdResult is TIMResult.Success) encryptedStorage.removeLongSecret(keyIdResult.value)
     }
 
     override fun getStoredRefreshToken(userId: String, password: String): TIMResult<JWT, TIMError> {
@@ -96,15 +103,19 @@ internal class TIMDataStorageInternal(
         val userId = refreshToken.userId
         val id = TIMDataStorageKey.RefreshToken(userId).storageKey
 
-        val storeWithNewKeyResult = encryptedStorage.storeWithNewKey(scope, id, refreshToken.token.convert, password).await()
+        val storeWithNewKeyResult = encryptedStorage.storeWithNewKey(scope, id, refreshToken.token.convertToByteArray(), password).await()
 
-        //TODO(Add error handling when storeWithNewKey throws errors correctly)
+        //TODO Add error handling when storeWithNewKey throws errors correctly
         when (storeWithNewKeyResult) {
             is TIMResult.Success -> {
                 disableBiometricAccessForRefreshToken(refreshToken.userId)
-                store(storeWithNewKeyResult.value.keyId.convert, TIMDataStorageKey.KeyId(refreshToken.userId))
+                store(storeWithNewKeyResult.value.keyId.convertToByteArray(), TIMDataStorageKey.KeyId(refreshToken.userId))
             }
-            else -> TODO("TIMResult Failure return@async storeWithNewKeyResult")
+            else -> {
+                //TODO TIMResult Failure return@async storeWithNewKeyResult
+
+                Log.d("TIMDateStorageInternal", storeWithNewKeyResult.toString())
+            }
         }
 
         addAvailableUserId(refreshToken.userId)
