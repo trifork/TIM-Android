@@ -42,7 +42,7 @@ internal class TIMAuthInternal(
         password: String,
         storeNewRefreshToken: Boolean
     ): Deferred<TIMResult<JWT, TIMError>> = scope.async {
-        val storedTokenResult = storage.getStoredRefreshToken(userId, password)
+        val storedTokenResult = storage.getStoredRefreshToken(scope, userId, password).await()
         val refreshToken = when (storedTokenResult) {
             is TIMResult.Success -> storedTokenResult.value
             is TIMResult.Failure -> return@async storedTokenResult
@@ -56,7 +56,7 @@ internal class TIMAuthInternal(
         }
 
         return@async if (storeNewRefreshToken) {
-            val storedToken = storage.storeRefreshTokenWithExistingPassword(scope, refreshToken, password)
+            val storedToken = storage.storeRefreshTokenWithExistingPassword(scope, refreshToken, password).await()
             when (storedToken) {
                 is TIMResult.Success -> accessToken.toTIMSucces()
                 is TIMResult.Failure -> storedToken

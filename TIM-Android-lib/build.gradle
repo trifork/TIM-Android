@@ -54,7 +54,6 @@ dependencies {
     //region Kotlin
     implementation kotlin.coroutinesAndroid
     implementation kotlin.serialization.json
-    implementation kotlin.serialization.protobuf
     //endregion
 
     //region Testing

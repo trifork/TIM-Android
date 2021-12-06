@@ -1,15 +1,26 @@
 package com.trifork.timandroid.models.errors
 
 import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
 import com.trifork.timencryptedstorage.models.toTIMFailure
 import net.openid.appauth.AuthorizationException
-import java.lang.IllegalStateException
 
-sealed class TIMError : Throwable()
+sealed class TIMError : Throwable() {
+    class Auth(val timAuthError: TIMAuthError) : TIMError()
+    class Storage(val timStorageError: TIMStorageError) : TIMError()
+}
 
-sealed class TIMAuthError(val sourceError: Throwable) : TIMError() {
+sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
 
-    class AuthStateWasNull : TIMAuthError(TODO("MISSING WHAT ERROR SHOULD BE HERE"))
+    //TODO MISSING WHAT ERROR SHOULD BE HERE
+    class AuthStateWasNull : TIMAuthError()
+
+
+    //region AccessToken
+    //TODO Which errors do we push for the AccessToken related errors?
+    class FailedToGetAccessToken : TIMAuthError()
+    class FailedToGetRequiredDataInToken : TIMAuthError()
+    //endregion
 
     class AppAuthNetworkError(error: Throwable) : TIMAuthError(error)
     class AppAuthFailed(error: Throwable) : TIMAuthError(error) {
@@ -51,5 +62,6 @@ sealed class TIMAuthError(val sourceError: Throwable) : TIMError() {
 }
 
 sealed class TIMStorageError : TIMError() {
-
+    class EncryptedStorageFailed(val timEncryptedStorageError: TIMEncryptedStorageError): TIMStorageError()
+    class IncompleteUserDataSet : TIMStorageError()
 }

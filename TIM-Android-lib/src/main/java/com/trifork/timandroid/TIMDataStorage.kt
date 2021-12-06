@@ -38,7 +38,7 @@ interface TIMDataStorage {
      * @param userId The user id associated with the refresh token
      * @param password The password that was used to store the refresh token
      */
-    fun getStoredRefreshToken(userId: String, password: String): TIMResult<JWT, TIMError>
+    fun getStoredRefreshToken(scope: CoroutineScope, userId: String, password: String): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
@@ -48,7 +48,7 @@ interface TIMDataStorage {
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : TIMResult<Unit, TIMError>
+    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Stores a refresh

@@ -19,7 +19,6 @@ ext {
             coroutinesAndroid: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
             serialization    : [
                     json: "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version",
-                    protobuf: "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$kotlinx_serialization_version"
             ]
     ]
     //endregion

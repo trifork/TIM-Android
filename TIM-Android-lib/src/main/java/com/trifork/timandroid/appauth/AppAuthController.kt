@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
+import com.trifork.timandroid.models.errors.TIMAuthError.Companion.mapAppAuthError
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.toTIMFailure
@@ -115,12 +116,18 @@ class AppAuthController(
             authState = this
         }
 
+        val newAuthStateAccessToken = newAuthState.accessToken
 
-        newAuthState.refreshToken.toTIMSucces()
-
-
-
-        TODO("Not yet implemented")
+        if(newAuthStateAccessToken != null) {
+            val newJWT = JWT.newInstance(newAuthStateAccessToken)
+            if(newJWT != null) {
+                return@async newJWT.toTIMSucces()
+            }
+            //TODO Which error do we push to FailedToGetRequiredDataInToken?
+            return@async TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
+        }
+        //TODO Which error do we push to FailedToGetAccessToken?
+        return@async TIMAuthError.FailedToGetAccessToken().toTIMFailure()
     }
 
     private fun buildAuthorizationResponseFromConfig(serviceConfiguration: AuthorizationServiceConfiguration) =
