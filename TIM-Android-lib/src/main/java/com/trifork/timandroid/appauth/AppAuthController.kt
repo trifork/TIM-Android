@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
-import com.trifork.timandroid.models.errors.TIMAuthError.Companion.mapAppAuthError
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.toTIMFailure
@@ -16,11 +15,6 @@ import kotlinx.coroutines.async
 import net.openid.appauth.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import net.openid.appauth.AuthorizationException
-
-import net.openid.appauth.AuthState.AuthStateAction
-
-
 
 
 class AppAuthController(
@@ -124,9 +118,9 @@ class AppAuthController(
 
         val newAuthStateAccessToken = newAuthState.accessToken
 
-        if(newAuthStateAccessToken != null) {
+        if (newAuthStateAccessToken != null) {
             val newJWT = JWT.newInstance(newAuthStateAccessToken)
-            if(newJWT != null) {
+            if (newJWT != null) {
                 return@async newJWT.toTIMSucces()
             }
             //TODO Which error do we push to FailedToGetRequiredDataInToken?
@@ -142,7 +136,7 @@ class AppAuthController(
         ).build()
 
     override fun accessToken(scope: CoroutineScope, forceRefresh: Boolean): Deferred<TIMResult<JWT, TIMAuthError>> = scope.async {
-        if(authState == null) {
+        if (authState == null) {
             return@async TIMAuthError.AuthStateWasNull().toTIMFailure()
         }
 
@@ -152,11 +146,7 @@ class AppAuthController(
             is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
             is TIMResult.Success -> {
                 val jwt = JWT.newInstance(freshTokenResult.value)
-                if(jwt != null) {
-                    jwt.toTIMSucces()
-                } else {
-                    TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
-                }
+                jwt?.toTIMSucces() ?: TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
             }
         }
     }
@@ -189,11 +179,12 @@ class AppAuthController(
 
 
     /**
-     *
+     * Attempts to retrieve a fresh accessToken
+     * @return a fresh OpenID accessToken
      */
     private fun performActionWithFreshTokens(
         scope: CoroutineScope
-    ) : Deferred<TIMResult<String, TIMAuthError>> =
+    ): Deferred<TIMResult<String, TIMAuthError>> =
         scope.async {
             suspendCoroutine { continuation ->
                 authState?.performActionWithFreshTokens(authorizationService) { accessToken, _, error ->
@@ -206,7 +197,7 @@ class AppAuthController(
                     )
                 }
             }
-    }
+        }
 
     /**
      * Attempts to discover the [AuthorizationServiceConfiguration] for [TIMOpenIdConnectConfiguration.issuerUrl].

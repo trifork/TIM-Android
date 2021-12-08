@@ -52,14 +52,15 @@ dependencies {
 
 
     //region Kotlin
-    implementation kotlin.coroutinesAndroid
+    implementation kotlin.coroutinesAndroid.coroutinesAndroid
+    testImplementation kotlin.coroutinesAndroid.coroutinesAndroidTest
     implementation kotlin.serialization.json
     //endregion
 
     //region Testing
     testImplementation jUnit.junit
 
-
+    androidTestImplementation mockk.android
     androidTestImplementation androidX.test.androidJUnit
     androidTestImplementation androidX.test.espresso
     //endregion

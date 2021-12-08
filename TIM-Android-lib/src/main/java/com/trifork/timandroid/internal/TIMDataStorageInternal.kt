@@ -75,9 +75,9 @@ internal class TIMDataStorageInternal(
     //endregion
 
 
-    override fun hasRefreshToken(userId: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasRefreshToken(userId: String): Boolean =
+        encryptedStorage.hasValue(TIMDataStorageKey.RefreshToken(userId).storageKey) &&
+                encryptedStorage.hasValue(TIMDataStorageKey.KeyId(userId).storageKey)
 
     override fun hasBiometricAccessForRefreshToken(userId: String): Boolean {
         TODO("Not yet implemented")
