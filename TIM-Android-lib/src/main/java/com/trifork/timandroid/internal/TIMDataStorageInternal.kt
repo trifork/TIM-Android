@@ -111,7 +111,9 @@ internal class TIMDataStorageInternal(
                 if (jwt != null) {
                     jwt.toTIMSucces()
                 }
-                TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
+                else {
+                    TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
+                }
             }
             is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(refreshToken.error).toTIMFailure()
         }
@@ -149,7 +151,6 @@ internal class TIMDataStorageInternal(
             }
             is TIMResult.Failure -> return@async mapAndHandleKeyIdLoadError(keyIdResult.error, refreshToken.userId).toTIMFailure()
         }
-
     }
 
     override fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) = scope.async {

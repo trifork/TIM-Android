@@ -38,7 +38,7 @@ interface OpenIDConnectController {
     /**
      * // TODO: Missing docs - MFJ (21/09/2021)
      */
-    fun accessToken(forceRefresh: Boolean): TIMResult<JWT, TIMAuthError>
+    fun accessToken(scope: CoroutineScope, forceRefresh: Boolean): Deferred<TIMResult<JWT, TIMAuthError>>
 
     /**
      * // TODO: Missing docs - MFJ (21/09/2021)

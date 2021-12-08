@@ -30,7 +30,7 @@ interface TIMAuth {
      * Gets the current access token from the current session if available
      * This will automatically renew the access token if necessary and if the current refresh token is valid
      */
-    fun accessToken(): TIMResult<JWT, TIMError>
+    fun accessToken(scope: CoroutineScope): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (20/09/2021)
@@ -55,6 +55,7 @@ interface TIMAuth {
 
     /**
      * // TODO: Missing docs - MFJ (20/09/2021)
+     * //
      */
     fun loginWithBiometricId()
 }

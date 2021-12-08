@@ -16,6 +16,12 @@ import kotlinx.coroutines.async
 import net.openid.appauth.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import net.openid.appauth.AuthorizationException
+
+import net.openid.appauth.AuthState.AuthStateAction
+
+
+
 
 class AppAuthController(
     private val config: TIMOpenIdConnectConfiguration,
@@ -135,8 +141,24 @@ class AppAuthController(
             buildAuthRequest(serviceConfiguration)
         ).build()
 
-    override fun accessToken(forceRefresh: Boolean): TIMResult<JWT, TIMAuthError> {
-        TODO("Not yet implemented")
+    override fun accessToken(scope: CoroutineScope, forceRefresh: Boolean): Deferred<TIMResult<JWT, TIMAuthError>> = scope.async {
+        if(authState == null) {
+            return@async TIMAuthError.AuthStateWasNull().toTIMFailure()
+        }
+
+        val freshTokenResult = performActionWithFreshTokens(scope).await()
+
+        return@async when (freshTokenResult) {
+            is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
+            is TIMResult.Success -> {
+                val jwt = JWT.newInstance(freshTokenResult.value)
+                if(jwt != null) {
+                    jwt.toTIMSucces()
+                } else {
+                    TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
+                }
+            }
+        }
     }
 
     override fun refreshToken(): JWT? {
@@ -165,6 +187,26 @@ class AppAuthController(
             .setScopes(config.scopes)
             .build()
 
+
+    /**
+     *
+     */
+    private fun performActionWithFreshTokens(
+        scope: CoroutineScope
+    ) : Deferred<TIMResult<String, TIMAuthError>> =
+        scope.async {
+            suspendCoroutine { continuation ->
+                authState?.performActionWithFreshTokens(authorizationService) { accessToken, _, error ->
+                    continuation.resume(
+                        handleAppAuthCallback(
+                            accessToken,
+                            error,
+                            TIMAuthError.FailedToGetAccessToken()
+                        )
+                    )
+                }
+            }
+    }
 
     /**
      * Attempts to discover the [AuthorizationServiceConfiguration] for [TIMOpenIdConnectConfiguration.issuerUrl].
