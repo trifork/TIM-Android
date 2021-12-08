@@ -1,6 +1,7 @@
 package com.trifork.timandroid.internal
 
 import com.trifork.timandroid.TIMDataStorage
+import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.ext.convertToByteArray
 import com.trifork.timandroid.helpers.ext.convertToString
@@ -129,7 +130,7 @@ internal class TIMDataStorageInternal(
         }
     }
 
-    override fun getStoredRefreshTokenViaBiometric(userId: String) {
+    override fun getStoredRefreshTokenViaBiometric(userId: String) : TIMResult<BiometricRefreshToken, TIMError> {
         TODO("Not yet implemented")
     }
 
@@ -162,10 +163,10 @@ internal class TIMDataStorageInternal(
 
         addAvailableUserId(refreshToken.userId)
 
-        return@async Unit.toTIMSucces()
+        return@async storeWithNewKeyResult.value.toTIMSucces()
     }
 
-    override fun enableBiometricAccessForRefreshToken(password: String, userId: String) {
+    override fun enableBiometricAccessForRefreshToken(password: String, userId: String) : TIMResult<Unit, TIMError> {
         TODO("Not yet implemented")
     }
 

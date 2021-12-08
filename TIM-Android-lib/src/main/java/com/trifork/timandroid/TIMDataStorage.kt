@@ -1,8 +1,10 @@
 package com.trifork.timandroid
 
+import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.keyservice.TIMESKeyCreationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 
@@ -43,7 +45,7 @@ interface TIMDataStorage {
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun getStoredRefreshTokenViaBiometric(userId: String)
+    fun getStoredRefreshTokenViaBiometric(userId: String) : TIMResult<BiometricRefreshToken, TIMError>
 
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
@@ -53,13 +55,13 @@ interface TIMDataStorage {
     /**
      * Stores a refresh
      */
-    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<Unit, TIMError>>
+    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<TIMESKeyCreationResult, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
 
-    fun enableBiometricAccessForRefreshToken(password: String, userId: String)
+    fun enableBiometricAccessForRefreshToken(password: String, userId: String) : TIMResult<Unit, TIMError>
 
     /**
      *  // TODO: Missing docs - MFJ (14/09/2021)
