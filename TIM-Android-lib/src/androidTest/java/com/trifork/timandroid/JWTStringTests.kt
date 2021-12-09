@@ -1,14 +1,16 @@
 package com.trifork.timandroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.trifork.timandroid.helpers.*
+import com.trifork.timandroid.helpers.JWTString
+import com.trifork.timandroid.helpers.expire
+import com.trifork.timandroid.helpers.issuer
+import com.trifork.timandroid.helpers.userId
 import org.junit.Assert.*
 import org.junit.Test
-
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class JWTStringTest {
+class JWTStringTests {
 
     private val simpleAccessToken : JWTString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxMzM3LCJpc3MiOiJodHRwczovL3RyaWZvcmsuY29tIn0.C_ERZ4zqvSLL0x1klZxERDzyDsjSFM-AYAsn0sdFmqE"
     private val invalidJwt : JWTString = "INVALID"

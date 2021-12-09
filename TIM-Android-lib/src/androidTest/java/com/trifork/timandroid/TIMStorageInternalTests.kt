@@ -18,7 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class TIMStorageInternalTest {
+class TIMStorageInternalTests {
 
     private val testRefreshToken: JWT = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")!!
 
@@ -42,7 +42,7 @@ class TIMStorageInternalTest {
         // Try to store refresh token with existing password, without having created a new password.
         val storeResult = storage.storeRefreshTokenWithExistingPassword(this, updatedRefreshTokenJwt, "1234").await() as TIMResult.Failure
         val error = storeResult.error as TIMError.Storage
-        assertEquals(TIMStorageError.IncompleteUserDataSet::class.java, error.timStorageError::class.java)
+        assertEquals(TIMStorageError.IncompleteUserDataSet::class, error.timStorageError::class)
 
         assertFalse(storage.availableUserIds.contains(updatedRefreshTokenJwt.userId))
         val keyModel = storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
@@ -61,7 +61,7 @@ class TIMStorageInternalTest {
 
         val keyModel = storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
 
-        assertEquals(TIMResult.Success::class.java, keyModel::class.java)
+        assertEquals(TIMResult.Success::class, keyModel::class)
     }
 
     //TODO Fails because of missing implementation
@@ -76,7 +76,7 @@ class TIMStorageInternalTest {
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
         val result = storage.enableBiometricAccessForRefreshToken("1234", testRefreshToken.userId)
 
-        assertEquals(TIMResult.Success::class.java, result::class.java)
+        assertEquals(TIMResult.Success::class, result::class)
 
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
@@ -128,7 +128,7 @@ class TIMStorageInternalTest {
 
         val result = storage.enableBiometricAccessForRefreshToken("1234", testRefreshToken.userId)
 
-        assertEquals(TIMResult.Success::class.java, result::class.java)
+        assertEquals(TIMResult.Success::class, result::class)
 
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
@@ -172,9 +172,10 @@ class TIMStorageInternalTest {
         val bioResult2 = storage.getStoredRefreshTokenViaBiometric(user2RefreshToken.userId) as TIMResult.Failure
 
         val error = bioResult2.error as TIMError.Storage
+        //TODO Why cant we cast it here?
         val secureStorageFailed = error.timStorageError as TIMEncryptedStorageError.SecureStorageFailed
 
-        assertEquals(TIMEncryptedStorageError.SecureStorageFailed::class.java, secureStorageFailed::class.java)
+        assertEquals(TIMEncryptedStorageError.SecureStorageFailed::class, secureStorageFailed::class)
 
         // Get refresh token via password for user 2
         val storageResult = storage.getStoredRefreshToken(this, user2RefreshToken.userId, user2Password).await() as TIMResult.Success
