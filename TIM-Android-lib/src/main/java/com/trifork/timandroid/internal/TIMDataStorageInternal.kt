@@ -13,7 +13,7 @@ import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
 import com.trifork.timencryptedstorage.models.errors.TIMSecureStorageError
 import com.trifork.timencryptedstorage.models.toTIMFailure
-import com.trifork.timencryptedstorage.models.toTIMSucces
+import com.trifork.timencryptedstorage.models.toTIMSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -110,7 +110,7 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> {
                 val jwt = JWT.newInstance(refreshToken.value.convertToString())
                 if (jwt != null) {
-                    jwt.toTIMSucces()
+                    jwt.toTIMSuccess()
                 }
                 else {
                     TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
@@ -127,6 +127,7 @@ internal class TIMDataStorageInternal(
                 TIMError.Storage(TIMStorageError.IncompleteUserDataSet())
             }
             is TIMSecureStorageError.FailedToStoreData -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(secureStorageError)))
+            is TIMSecureStorageError.AuthenticationFailedForData -> TODO("Not yet implemented")
         }
     }
 
@@ -145,7 +146,7 @@ internal class TIMDataStorageInternal(
                 when (storeResult) {
                     is TIMResult.Success -> {
                         addAvailableUserId(refreshToken.userId)
-                        return@async Unit.toTIMSucces()
+                        return@async Unit.toTIMSuccess()
                     }
                     is TIMResult.Failure -> return@async TIMError.Storage(TIMStorageError.EncryptedStorageFailed(storeResult.error)).toTIMFailure()
                 }
@@ -163,7 +164,7 @@ internal class TIMDataStorageInternal(
 
         addAvailableUserId(refreshToken.userId)
 
-        return@async storeWithNewKeyResult.value.toTIMSucces()
+        return@async storeWithNewKeyResult.value.toTIMSuccess()
     }
 
     override fun enableBiometricAccessForRefreshToken(password: String, userId: String) : TIMResult<Unit, TIMError> {
@@ -181,7 +182,7 @@ internal class TIMDataStorageInternal(
     ): TIMResult<T, TIMSecureStorageError> {
         val dataResult = encryptedStorage.secureStorage.get(key.storageKey)
         return when (dataResult) {
-            is TIMResult.Success -> convertCallback(dataResult.value).toTIMSucces()
+            is TIMResult.Success -> convertCallback(dataResult.value).toTIMSuccess()
             is TIMResult.Failure -> dataResult
         }
     }

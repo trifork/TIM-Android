@@ -40,7 +40,7 @@ object TIM {
     @Throws(RuntimeException::class)
     fun configure(config: TIMConfiguration, context: Context, allowReconfigure: Boolean = false) {
 
-        if(!allowReconfigure && (_storage != null || _auth != null)) {
+        if (!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
         }
 

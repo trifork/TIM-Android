@@ -8,7 +8,7 @@ import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.toTIMFailure
-import com.trifork.timencryptedstorage.models.toTIMSucces
+import com.trifork.timencryptedstorage.models.toTIMSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -39,7 +39,7 @@ class AppAuthController(
                     val authRequest = buildAuthRequest(serviceConfigResult.value)
                     try {
                         authorizationService.getAuthorizationRequestIntent(authRequest)
-                            .toTIMSucces()
+                            .toTIMSuccess()
                     } catch (e: ActivityNotFoundException) {
                         TIMAuthError.NoSuitableBrowser(e).toTIMFailure()
                     }
@@ -73,7 +73,7 @@ class AppAuthController(
                 when (tokenRequest) {
                     is TIMResult.Success -> {
                         authState = AuthState(authResponse.value, tokenRequest.value, error)
-                        Unit.toTIMSucces()
+                        Unit.toTIMSuccess()
                     }
                     is TIMResult.Failure -> tokenRequest
                 }
@@ -121,7 +121,7 @@ class AppAuthController(
         if (newAuthStateAccessToken != null) {
             val newJWT = JWT.newInstance(newAuthStateAccessToken)
             if (newJWT != null) {
-                return@async newJWT.toTIMSucces()
+                return@async newJWT.toTIMSuccess()
             }
             //TODO Which error do we push to FailedToGetRequiredDataInToken?
             return@async TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
@@ -146,7 +146,7 @@ class AppAuthController(
             is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
             is TIMResult.Success -> {
                 val jwt = JWT.newInstance(freshTokenResult.value)
-                jwt?.toTIMSucces() ?: TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
+                jwt?.toTIMSuccess() ?: TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
             }
         }
     }
@@ -239,7 +239,7 @@ class AppAuthController(
     private fun <T> handleAppAuthCallback(value: T?, error: AuthorizationException?, fallbackError: TIMAuthError): TIMResult<T, TIMAuthError> =
         when {
             error != null -> TIMAuthError.mapAppAuthError(error)
-            value != null -> value.toTIMSucces()
+            value != null -> value.toTIMSuccess()
             else -> fallbackError.toTIMFailure()
         }
 

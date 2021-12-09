@@ -8,7 +8,7 @@ import com.trifork.timandroid.appauth.OpenIDConnectController
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
-import com.trifork.timencryptedstorage.models.toTIMSucces
+import com.trifork.timencryptedstorage.models.toTIMSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -58,11 +58,11 @@ internal class TIMAuthInternal(
         return@async if (storeNewRefreshToken) {
             val storedToken = storage.storeRefreshTokenWithExistingPassword(scope, refreshToken, password).await()
             when (storedToken) {
-                is TIMResult.Success -> accessToken.toTIMSucces()
+                is TIMResult.Success -> accessToken.toTIMSuccess()
                 is TIMResult.Failure -> storedToken
             }
         } else {
-            accessToken.toTIMSucces()
+            accessToken.toTIMSuccess()
         }
     }
 

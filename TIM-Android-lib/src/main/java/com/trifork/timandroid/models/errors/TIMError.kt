@@ -2,6 +2,7 @@ package com.trifork.timandroid.models.errors
 
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
+import com.trifork.timencryptedstorage.models.errors.TIMKeyServiceError
 import com.trifork.timencryptedstorage.models.toTIMFailure
 import net.openid.appauth.AuthorizationException
 
@@ -35,8 +36,8 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
     class RefreshTokenExpired(error: Throwable) : TIMAuthError(error)
 
     //region Registration
-    class NoSuitableBrowser(error: Throwable): TIMAuthError(error)
-    object NoRegistrationIntentData: TIMAuthError(Exception("No data was found in the registration result intent"))
+    class NoSuitableBrowser(error: Throwable) : TIMAuthError(error)
+    object NoRegistrationIntentData : TIMAuthError(Exception("No data was found in the registration result intent"))
     //endregion
 
     companion object {
@@ -62,6 +63,55 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
 }
 
 sealed class TIMStorageError : TIMError() {
-    class EncryptedStorageFailed(val timEncryptedStorageError: TIMEncryptedStorageError): TIMStorageError()
+    class EncryptedStorageFailed(val timEncryptedStorageError: TIMEncryptedStorageError) : TIMStorageError()
     class IncompleteUserDataSet : TIMStorageError()
+
+    fun isKeyLocked(): Boolean =
+        isKeyServiceErrorInternal(TIMKeyServiceError.KeyLocked())
+
+    fun isWrongPassword(): Boolean =
+        isKeyServiceErrorInternal(TIMKeyServiceError.BadPassword())
+
+    /**
+     *   Determines whether this error is an error thrown by the KeyService.
+     *
+     *   This might be useful for handling unexpected cases from the encryption part of the framework.
+     *   When the key service fails you don't want to do any drastic fallback, since the server might "just" be down or the user have no internet connection. You will be able to recover later on, from a key service error.
+     **/
+    //TODO Do we actually need this? Or can we let others call isKeyServiceError below directly?
+    fun isKeyServiceError() : Boolean = isKeyServiceErrorInternal()
+
+    /**
+     * Determines whether this error is a specific kind of key service error.
+     * @param keyServiceError The key service error to look for. If [null] is passed it will look for any kind of key service error.
+     */
+    private fun isKeyServiceErrorInternal(keyServiceError: TIMKeyServiceError? = null): Boolean =
+        when (this) {
+            is EncryptedStorageFailed -> {
+                when (this.timEncryptedStorageError) {
+                    is TIMEncryptedStorageError.KeyServiceFailed -> {
+                        if (keyServiceError != null) {
+                            this.timEncryptedStorageError.error::class == keyServiceError::class
+                        } else {
+                            true
+                        }
+                    }
+                    else -> {
+                        false
+                    }
+                }
+            }
+            is IncompleteUserDataSet -> false
+        }
+
+    fun isBiometricFailedError() : Boolean =
+        when (this) {
+            is EncryptedStorageFailed -> {
+                when (this.timEncryptedStorageError) {
+                    is TIMEncryptedStorageError.SecureStorageFailed -> true
+                    else -> false
+                }
+            }
+            is IncompleteUserDataSet -> false
+        }
 }
