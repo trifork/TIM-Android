@@ -200,14 +200,14 @@ class AppAuthController(
         }
 
     /**
-     * Attempts to discover the [AuthorizationServiceConfiguration] for [TIMOpenIdConnectConfiguration.issuerUrl].
+     * Attempts to discover the [AuthorizationServiceConfiguration] for [TIMOpenIdConnectConfiguration.issuerUri].
      * This implementation uses [AppAuthController.config] passed on creation of this class
      * @return The service configuration for the given OpenID Connect issuer
      */
     private fun discoverConfiguration(scope: CoroutineScope): Deferred<TIMResult<AuthorizationServiceConfiguration, TIMAuthError>> =
         scope.async {
             suspendCoroutine { continuation ->
-                AuthorizationServiceConfiguration.fetchFromIssuer(config.issuerUrl) { configuration, error ->
+                AuthorizationServiceConfiguration.fetchFromIssuer(config.issuerUri) { configuration, error ->
                     continuation.resume(
                         handleAppAuthCallback(
                             configuration,
