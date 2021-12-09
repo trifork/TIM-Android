@@ -1,7 +1,6 @@
 package com.trifork.timandroid.models
 
 import android.net.Uri
-import android.util.Log
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
@@ -10,17 +9,37 @@ import com.trifork.timencryptedstorage.models.keyservice.TIMKeyServiceVersion
 import com.trifork.timencryptedstorage.securestorage.TIMSecureStorage
 import java.net.URL
 
-class TIMConfiguration{
+/**
+ * Combined configuration for AppAuth and TIMEncryptedStorage
+ */
+class TIMConfiguration {
 
+    /**
+     * OIDC configuration
+     */
     val oidcConfig: TIMOpenIdConnectConfiguration
+
+    /**
+     * KeyService configuration
+     */
     val keyServiceConfig: TIMKeyServiceConfiguration
+
+    /**
+     * The encryption method used by TIM, [TIMESEncryptionMethod.AesGcm] is the default and only supported as of now
+     */
     val encryptionMethod: TIMESEncryptionMethod
 
-    val TAG = "TIMConfiguration"
-
+    /**
+     * Default constructor
+     * @param timBaseUrl TIM base URL, e.g. "https://trifork.com"
+     * @param realm Realm, e.g. "my-test-realm"
+     * @param clientId Client id, e.g. "my-client-id"
+     * @param redirectUri Redirect URI, e.g. "my-app:/"
+     * @param scopes Scopes, e.g. [[OIDScopeOpenID], [OIDScopeProfile]]
+     * @param encryptionMethod Optional encryption method, [TIMESEncryptionMethod.AesGcm] is default and only supported
+     * @param keyServiceVersion Optional key service version, defaults to [TIMKeyServiceVersion.V1]
+     */
     constructor(timBaseUrl: URL, realm: String, clientId: String, redirectUri: Uri, scopes: List<String>, encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1) {
-        Log.d(TAG, timBaseUrl.toURI().rawPath)
-
         val fullTimUrl = Uri.parse("${timBaseUrl}/auth/realms/$realm")
 
         this.oidcConfig = TIMOpenIdConnectConfiguration(
