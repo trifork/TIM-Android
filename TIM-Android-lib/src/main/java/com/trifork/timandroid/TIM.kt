@@ -33,12 +33,14 @@ object TIM {
 
     // TODO: Consider weak reference here - MFJ (14/09/2021)
     /**
-     * // TODO: Missing docs - MFJ (20/09/2021)
-     */
+     * @param config TIMConfiguration
+     * @param context Context
+     * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
+     * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, context: Context) {
+    fun configure(config: TIMConfiguration, context: Context, allowReconfigure: Boolean = false) {
 
-        if(_storage != null || _auth != null) {
+        if(!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
         }
 
@@ -59,8 +61,11 @@ object TIM {
 
     /**
      * Configures [TIM] properties with the provided custom implementations
-     *
+     * **THIS IS NOT THE USUAL WAY TO CONFIGURE TIM**
      * This can be useful when mocking for testing or other scenarios where custom implementation
+     *
+     * @param dataStorage implementation of [TIMDataStorage]
+     * @param auth implementation of [TIMAuth]
      */
     fun configure(dataStorage: TIMDataStorage, auth: TIMAuth) {
         _storage = dataStorage
