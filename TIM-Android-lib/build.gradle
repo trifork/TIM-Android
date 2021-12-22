@@ -8,10 +8,10 @@ plugins {
 apply from: '../dependencies.gradle'
 
 android {
-    compileSdk 30
+    compileSdk 31
 
     defaultConfig {
-        minSdk 21
+        minSdk 28
         targetSdk 30
         versionCode 1
         versionName "1.0"
@@ -72,6 +72,10 @@ dependencies {
 
     //region AppAuth
     implementation appAuth
+    //endregion
+
+    //region Biometric
+    implementation biometric.biometric
     //endregion
 }
 

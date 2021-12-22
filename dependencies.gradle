@@ -53,4 +53,10 @@ ext {
             jvm: "io.mockk:mockk-agent-jvm:$mockk_version"
     ]
     //endregion
+
+    //region Biometric
+    biometric_version = "1.2.0-alpha04"
+    biometric = [
+            biometric: "androidx.biometric:biometric-ktx:$biometric_version"
+    ]
 }

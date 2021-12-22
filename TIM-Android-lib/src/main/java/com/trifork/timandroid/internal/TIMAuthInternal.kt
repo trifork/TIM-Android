@@ -1,10 +1,11 @@
 package com.trifork.timandroid.internal
 
 import android.content.Intent
-import com.trifork.timandroid.helpers.JWT
+import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIMAuth
 import com.trifork.timandroid.TIMDataStorage
 import com.trifork.timandroid.appauth.OpenIDConnectController
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
@@ -66,7 +67,9 @@ internal class TIMAuthInternal(
         }
     }
 
-    override fun loginWithBiometricId() {
-        TODO("Not yet implemented")
+    override fun loginWithBiometricId(userId: String, password: String, fragment: Fragment): TIMResult<Unit, TIMError> {
+        //storage.enableBiometricAccessForRefreshToken(userId, password, fragment)
+
+        return Unit.toTIMSuccess()
     }
 }

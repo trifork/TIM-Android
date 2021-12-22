@@ -104,6 +104,7 @@ sealed class TIMStorageError : TIMError() {
             is IncompleteUserDataSet -> false
         }
 
+    //TODO Can we use this as is? (taken directly from iOS sdk?) - JHE 21.12.21
     fun isBiometricFailedError() : Boolean =
         when (this) {
             is EncryptedStorageFailed -> {
@@ -114,4 +115,12 @@ sealed class TIMStorageError : TIMError() {
             }
             is IncompleteUserDataSet -> false
         }
+}
+
+sealed class TIMBiometricError: TIMError() {
+
+    //region Registration
+    class BiometricAuthenticationError(error: Throwable) : TIMBiometricError()
+    //endregion
+
 }

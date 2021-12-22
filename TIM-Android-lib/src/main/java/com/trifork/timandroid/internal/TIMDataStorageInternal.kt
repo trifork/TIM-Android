@@ -1,6 +1,9 @@
 package com.trifork.timandroid.internal
 
+import android.util.Log
+import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIMDataStorage
+import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.ext.convertToByteArray
@@ -167,8 +170,20 @@ internal class TIMDataStorageInternal(
         return@async storeWithNewKeyResult.value.toTIMSuccess()
     }
 
-    override fun enableBiometricAccessForRefreshToken(password: String, userId: String) : TIMResult<Unit, TIMError> {
-        TODO("Not yet implemented")
+    override fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment) : Deferred<TIMResult<Unit, TIMError>> = scope.async {
+
+        val cipherResult = encryptedStorage.getEncryptCipher()
+
+        val cipher = when (cipherResult) {
+            is TIMResult.Failure -> TODO("No error handling")
+            is TIMResult.Success -> cipherResult.value
+        }
+
+        val encryptionCipher = TIMBiometric.presentBiometricPrompt(scope, fragment, cipher).await()
+
+        //TODO Parse received Cipher to encrypted storage?
+        Log.d("here", "")
+        return@async Unit.toTIMSuccess()
     }
 
     override fun storeRefreshTokenWithLongSecret(refreshToken: JWT, longSecret: String): TIMResult<Unit, TIMError> {

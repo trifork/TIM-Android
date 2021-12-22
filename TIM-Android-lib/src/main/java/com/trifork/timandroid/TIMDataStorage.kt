@@ -1,5 +1,6 @@
 package com.trifork.timandroid
 
+import androidx.fragment.app.Fragment
 import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMError
@@ -60,8 +61,7 @@ interface TIMDataStorage {
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-
-    fun enableBiometricAccessForRefreshToken(password: String, userId: String) : TIMResult<Unit, TIMError>
+    fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment) : Deferred<TIMResult<Unit, TIMError>>
 
     /**
      *  // TODO: Missing docs - MFJ (14/09/2021)
