@@ -1,5 +1,6 @@
 package com.trifork.timandroid.biometric
 
+import android.util.Log
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.models.errors.TIMBiometricError
@@ -13,6 +14,7 @@ import javax.crypto.Cipher
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+//TODO Make this private
 object TIMBiometric {
     fun presentBiometricPrompt(scope: CoroutineScope, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMBiometricError>> = scope.async {
         suspendCoroutine { continuation ->
@@ -21,7 +23,7 @@ object TIMBiometric {
                 listener = object : BiometricAuthListener {
                     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
                         continuation.resume(
-                            handleBiometricAuthenticationCallback(result.cryptoObject?.cipher, TIMBiometricError.BiometricAuthenticationError(Throwable("No cipher returned")))
+                            handleBiometricAuthenticationCallback(result.cryptoObject?.cipher, TIMBiometricError.BiometricAuthenticationError(null, Throwable("No cipher returned")))
                         )
                     }
 

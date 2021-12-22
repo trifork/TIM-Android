@@ -120,7 +120,10 @@ sealed class TIMStorageError : TIMError() {
 sealed class TIMBiometricError: TIMError() {
 
     //region Registration
-    class BiometricAuthenticationError(error: Throwable) : TIMBiometricError()
+    class BiometricAuthenticationError(errorCode: Int?, error: Throwable) : TIMBiometricError()
+
+
+
     //endregion
 
 }

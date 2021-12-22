@@ -1,11 +1,16 @@
 package com.trifork.timandroid
 
 import android.content.Context
+import android.util.Log
 import com.trifork.timandroid.appauth.AppAuthController
+import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
+import com.trifork.timandroid.helpers.TIMLogger
+import com.trifork.timandroid.helpers.TIMLoggerInternal
 import com.trifork.timandroid.internal.TIMAuthInternal
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.TIMConfiguration
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
+import com.trifork.timencryptedstorage.helpers.TIMEncryptedStorageLogger
 import com.trifork.timencryptedstorage.keyservice.TIMKeyServiceImpl
 import com.trifork.timencryptedstorage.securestorage.TIMEncryptedSharedPreferences
 
@@ -25,6 +30,10 @@ object TIM {
         get() = _auth
             ?: throw RuntimeException("Accessing TIM.auth before calling TIM.configure(...) is not allowed!")
 
+    private var _logger: TIMLogger? = null
+    val logger: TIMLogger?
+        get() = _logger
+
     /**
      * Indicates whether [TIM] has been configure by a call to [configure]
      */
@@ -38,16 +47,19 @@ object TIM {
      * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
      * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, context: Context, allowReconfigure: Boolean = false) {
+    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, allowReconfigure: Boolean = false) {
 
         if (!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
         }
 
+        _logger = customLogger
+
         val encryptedStorage = TIMEncryptedStorage(
             TIMEncryptedSharedPreferences(context),
+            TIMEncryptedStorageLoggerInternal(),
             TIMKeyServiceImpl.getInstance(config.keyServiceConfig),
-            config.encryptionMethod
+            config.encryptionMethod,
         )
 
         val storage = TIMDataStorageInternal(encryptedStorage)
@@ -72,5 +84,3 @@ object TIM {
         _auth = auth
     }
 }
-
-

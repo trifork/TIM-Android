@@ -3,19 +3,26 @@ package com.trifork.timandroid.biometric
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.util.Log
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.trifork.timandroid.TIM
 import com.trifork.timandroid.models.errors.TIMBiometricError
 
+//TODO Hide this from user. Expose through TIM in some kind of interface
 object BiometricUtil {
+
+    private const val TAG = "BiometricUtil"
 
     /**
      * Checks if Biometric Authentication is ready for the device
      */
+
+    //TODO Should we try and use biometric in case of BiometricManager.BIOMETRIC_STATUS_UNKNOWN?
     fun isBiometricReady(context: Context) = hasBiometricCapability(context) == BiometricManager.BIOMETRIC_SUCCESS
 
     //TODO Would we rather want to have a enrollment activity as per android documentation?
@@ -44,12 +51,14 @@ object BiometricUtil {
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
-                listener.onBiometricAuthenticationError(TIMBiometricError.BiometricAuthenticationError(Throwable(errString.toString())))
+                listener.onBiometricAuthenticationError(TIMBiometricError.BiometricAuthenticationError(errorCode, Throwable(errString.toString())))
             }
 
             override fun onAuthenticationFailed() {
                 super.onAuthenticationFailed()
-                listener.onBiometricAuthenticationError(TIMBiometricError.BiometricAuthenticationError(Throwable("Authentication failed for an unknown reason")))
+                //This is called when the biometric authentication fails due to the user placing wrong finger on sensor, system cant read it, system cant detect face, etc.
+                //So this is "soft-failures", not because something crashed/is wrong
+                TIM.logger?.log(Log.DEBUG, TAG, "Authentication with biometric soft-failed")
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
