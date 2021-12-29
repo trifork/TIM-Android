@@ -46,25 +46,32 @@ interface TIMDataStorage {
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun getStoredRefreshTokenViaBiometric(userId: String) : TIMResult<BiometricRefreshToken, TIMError>
-
-    /**
-     * // TODO: Missing docs - MFJ (14/09/2021)
-     */
-    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<Unit, TIMError>>
+    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Stores a refresh
      */
-    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String) : Deferred<TIMResult<TIMESKeyCreationResult, TIMError>>
+    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<TIMESKeyCreationResult, TIMError>>
 
     /**
      * // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment) : Deferred<TIMResult<Unit, TIMError>>
+    fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>>
+
+    /**
+     * // TODO: Missing docs - MFJ (14/09/2021)
+     */
+    fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      *  // TODO: Missing docs - MFJ (14/09/2021)
      */
-    fun storeRefreshTokenWithLongSecret(refreshToken: JWT, longSecret: String): TIMResult<Unit, TIMError>
+    fun storeRefreshTokenWithLongSecret(scope: CoroutineScope, refreshToken: JWT, longSecret: String): Deferred<TIMResult<Unit, TIMError>>
+
+    /**
+     * Enables biometric protection access for refresh token using longSecret.
+     * @param longSecret The long secret that was created upon creation of the password.
+     * @param userId The `userId` for the refresh token.
+     */
+    fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
 }

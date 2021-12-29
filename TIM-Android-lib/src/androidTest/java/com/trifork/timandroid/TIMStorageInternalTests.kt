@@ -1,7 +1,9 @@
 package com.trifork.timandroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.helpers.JWT
+import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.helpers.userId
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.errors.TIMError
@@ -9,9 +11,15 @@ import com.trifork.timandroid.models.errors.TIMStorageError
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
 import com.trifork.timencryptedstorage.helpers.test.SecureStorageMock
 import com.trifork.timencryptedstorage.helpers.test.TIMKeyServiceStub
+import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
 import com.trifork.timencryptedstorage.models.TIMResult
-import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
+import com.trifork.timencryptedstorage.models.keyservice.response.TIMKeyModel
+import com.trifork.timencryptedstorage.models.toTIMSuccess
+import com.trifork.timencryptedstorage.shared.BiometricCipherHelper
+import io.mockk.coEvery
+import io.mockk.mockk
+import io.mockk.mockkObject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -24,7 +32,7 @@ class TIMStorageInternalTests {
 
     @Test
     fun testStoreRefreshTokenWithNewPassword() = runBlocking {
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        val storage = dataStorage()
         assertFalse(storage.hasRefreshToken(testRefreshToken.userId))
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
         assertTrue(storage.hasRefreshToken(testRefreshToken.userId))
@@ -37,7 +45,7 @@ class TIMStorageInternalTests {
         val updatedRefreshTokenJwt = JWT.newInstance(newRefreshToken)!!
         assertEquals(newRefreshToken.userId, testRefreshToken.userId)
 
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        val storage = dataStorage()
 
         // Try to store refresh token with existing password, without having created a new password.
         val storeResult = storage.storeRefreshTokenWithExistingPassword(this, updatedRefreshTokenJwt, "1234").await() as TIMResult.Failure
@@ -57,97 +65,101 @@ class TIMStorageInternalTests {
 
     @Test
     fun testGetRefreshToken() = runBlocking {
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        val storage = dataStorage()
 
         val keyModel = storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
 
         assertEquals(TIMResult.Success::class, keyModel::class)
     }
 
-    //TODO Fails because of missing implementation
     @Test
     fun testBiometricAccessForRefreshToken() = runBlocking {
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        setupPresentBiometricPrompt()
+        val storage = dataStorage()
         val keyModel = timKeyServiceStub.timKeyModel
         // Store refresh token with new password
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
 
         // Enable biometric access
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
-        //TODO Here we need to parse a view model scope for testing?
-        //val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, )
 
-        //assertEquals(TIMResult.Success::class, result::class)
+        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk()).await()
+        // We assert that biometric access was given successfully
+        assertEquals(TIMResult.Success::class, result::class)
 
+        // We assert that we now have biometric access to our refresh token
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
         // Get stored refresh token
-        val storedRefreshTokenResult = storage.getStoredRefreshTokenViaBiometric(testRefreshToken.userId) as TIMResult.Success
+        val storedRefreshTokenResult = storage.getStoredRefreshTokenViaBiometric(this, testRefreshToken.userId, mockk()).await() as TIMResult.Success
 
+        // The token and long secret match the ones returned by the key server
         assertEquals(testRefreshToken.token, storedRefreshTokenResult.value.refreshToken.token)
         assertEquals(keyModel.longSecret, storedRefreshTokenResult.value.longSecret)
 
+        // We assert that biometric access is disabled by calling disableBiometricAccessForRefreshToken
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
         storage.disableBiometricAccessForRefreshToken(testRefreshToken.userId)
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
     }
 
-    //TODO Fails because of missing implementation
     @Test
     fun testEnableBiometricAccessForRefreshTokenViaLongSecret() = runBlocking {
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        setupPresentBiometricPrompt()
+        val storage = dataStorage()
         val keyModel = timKeyServiceStub.timKeyModel
 
         // Store refresh token with new password
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
-
         // Enable biometric access
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
-        val result = storage.storeRefreshTokenWithLongSecret(testRefreshToken, testRefreshToken.userId)
+        val result = storage.enableBiometricAccessForRefreshToken(this, keyModel.longSecret, testRefreshToken.userId, mockk()).await()
+
+        assertEquals(TIMResult.Success::class, result::class)
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
     }
 
-
-    //TODO Fails because of missing implementation
     @Test
     fun testStoreRefreshTokenWithLongSecret() = runBlocking {
         val jwt = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")!!
         val longSecret = "xe6XhucZ0BnH3yLQFR1wrZgPe3l4q/ymnQCCY/iZs3A="
 
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        val storage = dataStorage()
         val keyModel = storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
 
-        storage.storeRefreshTokenWithLongSecret(jwt, longSecret)
+        storage.storeRefreshTokenWithLongSecret(this, jwt, longSecret).await()
         assertTrue(storage.hasRefreshToken(jwt.userId))
     }
 
     @Test
     fun testClear() = runBlocking {
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
-        val keyModel = storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
+        setupPresentBiometricPrompt()
+        val storage = dataStorage()
+        storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
+
         assertTrue(storage.hasRefreshToken(testRefreshToken.userId))
 
-        //val result = storage.enableBiometricAccessForRefreshToken("1234", testRefreshToken.userId)
+        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk()).await()
 
-        //assertEquals(TIMResult.Success::class, result::class)
+        assertEquals(TIMResult.Success::class, result::class)
 
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
         storage.clear(testRefreshToken.userId)
 
-        assertEquals(0, storage.availableUserIds.size)
+        assertTrue(storage.availableUserIds.isEmpty())
         assertFalse(storage.hasRefreshToken(testRefreshToken.userId))
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
     }
 
-    //TODO Fails because of missing implementation
     @Test
     fun testMultipleUsers() = runBlocking {
+        setupPresentBiometricPrompt()
         val user1RefreshToken = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.El5bSmm8IPR4M11wg6mMCwnlx2hP7x4XZiaORoTWafY")!!
         val user1Password = "1234"
         val user2RefreshToken = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.q0FBllJKYNGIDEsHj8d0yIGLCaANkyjxER_l1Xm4P50")!!
         val user2Password = "4321"
-        val storage = dataStorage(TIMESEncryptionMethod.AesGcm)
+        val storage = dataStorage(TIMESEncryptionMethod.AesGcm, setupKeyServiceSupportingMultipleUsers())
 
         assertNotEquals(user1RefreshToken.token, user2RefreshToken.token)
         assertNotEquals(user1RefreshToken.userId, user2RefreshToken.userId)
@@ -161,23 +173,20 @@ class TIMStorageInternalTests {
         assertEquals(2, storage.availableUserIds.size)
 
         // Enable bio for user 1
-        //TODO
-        //storage.enableBiometricAccessForRefreshToken(user1Password, user1RefreshToken.userId)
+        storage.enableBiometricAccessForRefreshToken(this, user1Password, user1RefreshToken.userId, mockk()).await()
         assertTrue(storage.hasBiometricAccessForRefreshToken(user1RefreshToken.userId))
         assertFalse(storage.hasBiometricAccessForRefreshToken(user2RefreshToken.userId))
 
         // Get refresh token via bio for user 1
-        val bioResult1 = storage.getStoredRefreshTokenViaBiometric(user1RefreshToken.userId) as TIMResult.Success
+        val bioResult1 = storage.getStoredRefreshTokenViaBiometric(this, user1RefreshToken.userId, mockk()).await() as TIMResult.Success
         assertEquals(user1RefreshToken.token, bioResult1.value.refreshToken.token)
 
         // Get refresh token via bio for user 2 -> This should fail!
-        val bioResult2 = storage.getStoredRefreshTokenViaBiometric(user2RefreshToken.userId) as TIMResult.Failure
+        val bioResult2 = storage.getStoredRefreshTokenViaBiometric(this, user2RefreshToken.userId, mockk()).await() as TIMResult.Failure
 
         val error = bioResult2.error as TIMError.Storage
-        //TODO Why cant we cast it here?
-        val secureStorageFailed = error.timStorageError as TIMEncryptedStorageError.SecureStorageFailed
 
-        assertEquals(TIMEncryptedStorageError.SecureStorageFailed::class, secureStorageFailed::class)
+        assertEquals(TIMStorageError.EncryptedStorageFailed::class, error.timStorageError::class)
 
         // Get refresh token via password for user 2
         val storageResult = storage.getStoredRefreshToken(this, user2RefreshToken.userId, user2Password).await() as TIMResult.Success
@@ -196,14 +205,66 @@ class TIMStorageInternalTests {
     private val timSecureStorageMock = SecureStorageMock()
     private val timKeyServiceStub = TIMKeyServiceStub()
 
-    private fun dataStorage(encryptionMethod: TIMESEncryptionMethod): TIMDataStorageInternal =
+    private fun dataStorage(encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, timKeyServiceStub: TIMKeyService = TIMKeyServiceStub()): TIMDataStorageInternal =
         TIMDataStorageInternal(
             TIMEncryptedStorage(
                 timSecureStorageMock,
+                TIMEncryptedStorageLoggerInternal(),
                 timKeyServiceStub,
                 encryptionMethod
             )
         )
-    
+
+    private fun setupPresentBiometricPrompt() {
+        mockkObject(TIMBiometric) // applies mocking to our TIMBiometric helper object
+        val encryptionCipher = BiometricCipherHelper.getInitializedCipherForEncryption() // The encryption cipher returned from the biometric prompt
+        val decryptionCipher = BiometricCipherHelper.getInitializedCipherForDecryption(encryptionCipher.iv) // The decryption cipher returned from the biometric prompt
+
+        coEvery {
+            TIMBiometric.presentBiometricPrompt(any(), any(), any()).await()
+        } returns encryptionCipher.toTIMSuccess() andThen decryptionCipher.toTIMSuccess()
+    }
+
+    private fun setupKeyServiceSupportingMultipleUsers(): TIMKeyService {
+        val timKeyModelOne = TIMKeyModel(
+            "168dfa8a-a613-488d-876c-1a79122c8d5a",
+            "/RT5VXFinR27coWdsieCt3UxoKibplkO+bCVNkDJK9o=",
+            "xe6XhucZ0BnH3yLQFR1wrZgPe3l4q/ymnQCCY/iZs3A="
+        )
+
+        val timKeyModelTwo = TIMKeyModel(
+            "168dfa8a-a613-488d-876c-1a79122c8sda",
+            "/RT5VXFinR27coWdsieCt3UxoKibplkO+bCVNkDJK1o=",
+            "xe6XhucZ0BnH3yLQFR1wrZgPe3l4q/ymnQCCY/iZs3B="
+        )
+
+        return mockk {
+            //The first key is timKeyModelOne, next timKeyModelTwo
+            coEvery {
+                createKey(any(), any()).await()
+            } returns timKeyModelOne.toTIMSuccess() andThen timKeyModelTwo.toTIMSuccess()
+
+            //In case timKeyModelOne.keyId is used to get a new secret key, return KeyModelOne
+            coEvery {
+                getKeyViaSecret(any(), any(), timKeyModelOne.keyId).await()
+            } returns timKeyModelOne.toTIMSuccess()
+
+            //In case timKeyModelOne.keyId is used to get a new secret key, return KeyModelOne
+            coEvery {
+                getKeyViaLongSecret(any(), any(), timKeyModelOne.keyId).await()
+            } returns timKeyModelOne.toTIMSuccess()
+
+            //In case timKeyModelTwo.keyId is used to get a new secret key, return KeyModelTwo
+            coEvery {
+                getKeyViaSecret(any(), any(), timKeyModelTwo.keyId).await()
+            } returns timKeyModelTwo.toTIMSuccess()
+
+            //In case timKeyModelTwo.keyId is used to get a new secret key, return KeyModelTwo
+            coEvery {
+                getKeyViaLongSecret(any(), any(), timKeyModelTwo.keyId).await()
+            } returns timKeyModelTwo.toTIMSuccess()
+        }
+    }
+
     //endregion
 }

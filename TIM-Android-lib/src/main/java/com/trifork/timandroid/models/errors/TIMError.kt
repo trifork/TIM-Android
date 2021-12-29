@@ -20,6 +20,7 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
     //region AccessToken
     //TODO Which errors do we push for the AccessToken related errors?
     class FailedToGetAccessToken : TIMAuthError()
+    class FailedToGetRefreshToken : TIMAuthError()
     class FailedToGetRequiredDataInToken : TIMAuthError()
     //endregion
 
@@ -79,7 +80,7 @@ sealed class TIMStorageError : TIMError() {
      *   When the key service fails you don't want to do any drastic fallback, since the server might "just" be down or the user have no internet connection. You will be able to recover later on, from a key service error.
      **/
     //TODO Do we actually need this? Or can we let others call isKeyServiceError below directly?
-    fun isKeyServiceError() : Boolean = isKeyServiceErrorInternal()
+    fun isKeyServiceError(): Boolean = isKeyServiceErrorInternal()
 
     /**
      * Determines whether this error is a specific kind of key service error.
@@ -105,7 +106,7 @@ sealed class TIMStorageError : TIMError() {
         }
 
     //TODO Can we use this as is? (taken directly from iOS sdk?) - JHE 21.12.21
-    fun isBiometricFailedError() : Boolean =
+    fun isBiometricFailedError(): Boolean =
         when (this) {
             is EncryptedStorageFailed -> {
                 when (this.timEncryptedStorageError) {
@@ -117,11 +118,10 @@ sealed class TIMStorageError : TIMError() {
         }
 }
 
-sealed class TIMBiometricError: TIMError() {
+sealed class TIMBiometricError : TIMError() {
 
     //region Registration
     class BiometricAuthenticationError(errorCode: Int?, error: Throwable) : TIMBiometricError()
-
 
 
     //endregion
