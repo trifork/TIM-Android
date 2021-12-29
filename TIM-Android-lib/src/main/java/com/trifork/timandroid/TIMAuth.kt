@@ -1,6 +1,7 @@
 package com.trifork.timandroid
 
 import android.content.Intent
+import androidx.fragment.app.Fragment
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
@@ -57,5 +58,5 @@ interface TIMAuth {
      * // TODO: Missing docs - MFJ (20/09/2021)
      * //
      */
-    fun loginWithBiometricId()
+    fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean = true, fragment: Fragment): Deferred<TIMResult<JWT, TIMError>>
 }

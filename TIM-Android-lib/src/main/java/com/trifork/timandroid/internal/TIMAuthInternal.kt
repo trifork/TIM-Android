@@ -9,6 +9,7 @@ import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.toTIMFailure
 import com.trifork.timencryptedstorage.models.toTIMSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -67,9 +68,37 @@ internal class TIMAuthInternal(
         }
     }
 
-    override fun loginWithBiometricId(userId: String, password: String, fragment: Fragment): TIMResult<Unit, TIMError> {
-        //storage.enableBiometricAccessForRefreshToken(userId, password, fragment)
+    override fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean, fragment: Fragment): Deferred<TIMResult<JWT, TIMError>> = scope.async {
+        val enableResult = storage.getStoredRefreshTokenViaBiometric(scope, userId, fragment).await()
 
-        return Unit.toTIMSuccess()
+        val biometricRefreshToken = when (enableResult) {
+            is TIMResult.Failure -> return@async enableResult.error.toTIMFailure()
+            is TIMResult.Success -> enableResult.value
+        }
+
+        val silentLoginResult = openIdController.silentLogin(scope, biometricRefreshToken.refreshToken).await()
+
+        val accessToken = when (silentLoginResult) {
+            is TIMResult.Failure -> return@async TIMError.Auth(silentLoginResult.error).toTIMFailure()
+            is TIMResult.Success -> silentLoginResult.value
+        }
+
+        val newRefreshToken = openIdController.refreshToken()
+
+        if (newRefreshToken != null) {
+            if (storeNewRefreshToken) {
+                val storeRefreshTokenResult = storage.storeRefreshTokenWithLongSecret(scope, newRefreshToken, biometricRefreshToken.longSecret).await()
+
+                return@async when (storeRefreshTokenResult) {
+                    is TIMResult.Failure -> storeRefreshTokenResult.error.toTIMFailure()
+                    is TIMResult.Success -> accessToken.toTIMSuccess()
+                }
+
+            } else {
+                return@async accessToken.toTIMSuccess()
+            }
+        }
+
+        return@async TIMError.Auth(TIMAuthError.FailedToGetRefreshToken()).toTIMFailure()
     }
 }

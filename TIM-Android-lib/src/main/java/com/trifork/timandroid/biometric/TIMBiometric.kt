@@ -1,6 +1,5 @@
 package com.trifork.timandroid.biometric
 
-import android.util.Log
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.models.errors.TIMBiometricError
