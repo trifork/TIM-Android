@@ -15,9 +15,9 @@ import kotlin.coroutines.suspendCoroutine
 
 //TODO Make this private
 object TIMBiometric {
-    fun presentBiometricPrompt(scope: CoroutineScope, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMBiometricError>> = scope.async {
+    fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricUtil, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMBiometricError>> = scope.async {
         suspendCoroutine { continuation ->
-            BiometricUtil.showBiometricPrompt(
+            timBiometricUtil.showBiometricPrompt(
                 fragment = fragment,
                 listener = object : BiometricAuthListener {
                     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
@@ -32,7 +32,7 @@ object TIMBiometric {
                         )
                     }
                 },
-                cryptoObject = BiometricPrompt.CryptoObject(cipher)
+                cipher = cipher
             )
         }
     }

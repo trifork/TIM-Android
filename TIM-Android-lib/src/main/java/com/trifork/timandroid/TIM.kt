@@ -1,8 +1,8 @@
 package com.trifork.timandroid
 
 import android.content.Context
-import android.util.Log
 import com.trifork.timandroid.appauth.AppAuthController
+import com.trifork.timandroid.biometric.TIMBiometricUtil
 import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.helpers.TIMLogger
 import com.trifork.timandroid.helpers.TIMLoggerInternal
@@ -10,12 +10,10 @@ import com.trifork.timandroid.internal.TIMAuthInternal
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.TIMConfiguration
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
-import com.trifork.timencryptedstorage.helpers.TIMEncryptedStorageLogger
 import com.trifork.timencryptedstorage.keyservice.TIMKeyServiceImpl
 import com.trifork.timencryptedstorage.securestorage.TIMEncryptedSharedPreferences
 
 // TODO: In the README.md it should contain a section about the weird quirk between redirectUri in BuildConfig and in Manifest ("app:/" vs "app") - MFJ (20/09/2021)
-
 object TIM {
 
     private var _storage: TIMDataStorage? = null
@@ -47,7 +45,7 @@ object TIM {
      * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
      * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, allowReconfigure: Boolean = false) {
+    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricUtil: TIMBiometricUtil, allowReconfigure: Boolean = false) {
 
         if (!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
@@ -62,7 +60,10 @@ object TIM {
             config.encryptionMethod,
         )
 
-        val storage = TIMDataStorageInternal(encryptedStorage)
+        val storage = TIMDataStorageInternal(
+            encryptedStorage,
+            timBiometricUtil
+        )
         _auth = TIMAuthInternal(
             storage,
             AppAuthController(config.oidcConfig, context)

@@ -3,6 +3,7 @@ package com.trifork.timandroid
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.trifork.timandroid.biometric.TIMBiometricUtil
 import com.trifork.timandroid.helpers.TIMLoggerInternal
 import com.trifork.timandroid.models.TIMConfiguration
 import com.trifork.timandroid.models.openid.OIDScopeOpenID
@@ -27,16 +28,16 @@ class TIMTests {
     @Test
     fun testConfigure() {
         assertFalse(TIM.isConfigured)
-        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context)
+        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context, timBiometricUtil = TIMBiometricUtil.Builder().build())
         assertTrue(TIM.isConfigured)
     }
 
     @Test
     fun testReconfigure() {
         assertTrue(TIM.isConfigured)
-        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context, true)
+        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context, timBiometricUtil = TIMBiometricUtil.Builder().build(),true)
         assertTrue(TIM.isConfigured)
-        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context, true)
+        TIM.configure(config, TIMLoggerInternal(), InstrumentationRegistry.getInstrumentation().context, timBiometricUtil = TIMBiometricUtil.Builder().build(),true)
         assertTrue(TIM.isConfigured)
     }
 

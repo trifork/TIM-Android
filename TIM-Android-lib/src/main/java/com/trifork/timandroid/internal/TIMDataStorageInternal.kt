@@ -3,6 +3,7 @@ package com.trifork.timandroid.internal
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIMDataStorage
 import com.trifork.timandroid.biometric.TIMBiometric
+import com.trifork.timandroid.biometric.TIMBiometricUtil
 import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.ext.convertToByteArray
@@ -46,6 +47,7 @@ internal sealed class TIMDataStorageKey {
 
 internal class TIMDataStorageInternal(
     private val encryptedStorage: TIMEncryptedStorage,
+    private val timBiometricUtil: TIMBiometricUtil
 ) : TIMDataStorage {
 
     //region Available user ids
@@ -160,7 +162,7 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> cipherResult.value
         }
 
-        val decryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, fragment, cipher).await()
+        val decryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, timBiometricUtil, fragment, cipher).await()
 
         val decryptionCipher = when (decryptionCipherResult) {
             is TIMResult.Failure -> TODO("No error handling")
@@ -236,7 +238,7 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> cipherResult.value
         }
 
-        val encryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, fragment, cipher).await()
+        val encryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, timBiometricUtil, fragment, cipher).await()
 
         val encryptionCipher = when (encryptionCipherResult) {
             is TIMResult.Failure -> TODO("No error handling")
@@ -268,7 +270,7 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> cipherResult.value
         }
 
-        val encryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, fragment, cipher).await()
+        val encryptionCipherResult = TIMBiometric.presentBiometricPrompt(scope, timBiometricUtil, fragment, cipher).await()
 
         val encryptionCipher = when (encryptionCipherResult) {
             is TIMResult.Failure -> TODO("No error handling")
