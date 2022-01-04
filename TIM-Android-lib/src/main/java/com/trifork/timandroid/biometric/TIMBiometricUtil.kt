@@ -13,7 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIM
-import com.trifork.timandroid.models.errors.TIMBiometricError
+import com.trifork.timandroid.models.errors.TIMStorageError
 import javax.crypto.Cipher
 
 class TIMBiometricUtil private constructor(
@@ -72,6 +72,14 @@ class TIMBiometricUtil private constructor(
          * @param context a context object
          */
         fun launchBiometricSettings(context: Context) = BiometricUtil.launchBiometricSettings(context)
+
+        /**
+         * Get a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action
+         * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has enrolled biometric auth
+         */
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun biometricEnrollmentIntent() = BiometricUtil.configureBiometricEnrollmentIntent()
+
     }
 
     fun showBiometricPrompt(
@@ -134,7 +142,7 @@ private object BiometricUtil {
             authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
     }
-    
+
     //region Utility functions
     /**
      * Checks if Biometric Authentication is ready for the device e.g. th capability equals [BiometricManager.BIOMETRIC_SUCCESS]
@@ -160,10 +168,10 @@ private object BiometricUtil {
 
     /**
      * Create a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action
-     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has biometric enrolled
+     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has enrolled biometric auth
      */
     @RequiresApi(Build.VERSION_CODES.R)
-    fun launchBiometricCreationPrompt() = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+    fun configureBiometricEnrollmentIntent() = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
         putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, BIOMETRIC_STRONG)
     }
 
@@ -187,7 +195,7 @@ private object BiometricUtil {
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
-                listener.onBiometricAuthenticationError(TIMBiometricError.BiometricAuthenticationError(errorCode, Throwable(errString.toString())))
+                listener.onBiometricAuthenticationError(TIMStorageError.BiometricAuthenticationError(errorCode, Throwable(errString.toString())))
             }
 
             override fun onAuthenticationFailed() {

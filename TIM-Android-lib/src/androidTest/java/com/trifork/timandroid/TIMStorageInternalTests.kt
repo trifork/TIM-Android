@@ -219,12 +219,12 @@ class TIMStorageInternalTests {
 
     private fun setupPresentBiometricPrompt() {
         mockkObject(TIMBiometric) // applies mocking to our TIMBiometric helper object
-        val encryptionCipher = BiometricCipherHelper.getInitializedCipherForEncryption() // The encryption cipher returned from the biometric prompt
-        val decryptionCipher = BiometricCipherHelper.getInitializedCipherForDecryption(encryptionCipher.iv) // The decryption cipher returned from the biometric prompt
+        val encryptionCipher = BiometricCipherHelper.getInitializedCipherForEncryption() as TIMResult.Success // The encryption cipher returned from the biometric prompt
+        val decryptionCipher = BiometricCipherHelper.getInitializedCipherForDecryption(encryptionCipher.value.iv) as TIMResult.Success // The decryption cipher returned from the biometric prompt
 
         coEvery {
             TIMBiometric.presentBiometricPrompt(any(), any(), any(), any()).await()
-        } returns encryptionCipher.toTIMSuccess() andThen decryptionCipher.toTIMSuccess()
+        } returns encryptionCipher.value.toTIMSuccess() andThen decryptionCipher.value.toTIMSuccess()
     }
 
     private fun setupKeyServiceSupportingMultipleUsers(): TIMKeyService {

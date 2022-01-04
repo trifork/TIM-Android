@@ -67,6 +67,10 @@ sealed class TIMStorageError : TIMError() {
     class EncryptedStorageFailed(val timEncryptedStorageError: TIMEncryptedStorageError) : TIMStorageError()
     class IncompleteUserDataSet : TIMStorageError()
 
+    //region Biometric errors
+    class BiometricAuthenticationError(errorCode: Int?, error: Throwable) : TIMStorageError()
+    //endregion
+
     fun isKeyLocked(): Boolean =
         isKeyServiceErrorInternal(TIMKeyServiceError.KeyLocked())
 
@@ -103,11 +107,13 @@ sealed class TIMStorageError : TIMError() {
                 }
             }
             is IncompleteUserDataSet -> false
+            is BiometricAuthenticationError -> false
         }
 
-    //TODO Can we use this as is? (taken directly from iOS sdk?) - JHE 21.12.21
+    //TODO Is this correct? (BiometricAuthenticationError is not present in iOS sdk) - JHE 21.12.21
     fun isBiometricFailedError(): Boolean =
         when (this) {
+            is BiometricAuthenticationError -> true
             is EncryptedStorageFailed -> {
                 when (this.timEncryptedStorageError) {
                     is TIMEncryptedStorageError.SecureStorageFailed -> true
@@ -116,14 +122,6 @@ sealed class TIMStorageError : TIMError() {
             }
             is IncompleteUserDataSet -> false
         }
-}
-
-sealed class TIMBiometricError : TIMError() {
 
     //region Registration
-    class BiometricAuthenticationError(errorCode: Int?, error: Throwable) : TIMBiometricError()
-
-
-    //endregion
-
 }
