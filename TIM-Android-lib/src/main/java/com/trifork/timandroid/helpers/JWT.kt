@@ -5,7 +5,6 @@ class BiometricRefreshToken(
     val longSecret: String
 )
 
-
 //TODO(Add cast of expireDate to actual DateTime format)
 class JWT(
     val token: JWTString,

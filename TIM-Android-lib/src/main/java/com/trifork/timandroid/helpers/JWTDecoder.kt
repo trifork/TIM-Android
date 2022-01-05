@@ -4,7 +4,6 @@ import android.util.Base64
 import org.json.JSONObject
 import kotlin.math.ceil
 
-
 object JWTDecoder {
 
     fun decode(jwtToken: String) : Map<String, Any> {
@@ -14,7 +13,7 @@ object JWTDecoder {
 
     //TODO(Introduce moshi when implementing API)
     private fun decodeJWTPart(value: String) : Map<String, Any> {
-        //Soround by catch
+        //Surround by catch
         val bodyData = base64UrlDecode(value)
         val json = JSONObject(String(bodyData))
         val list = HashMap<String, Any>()

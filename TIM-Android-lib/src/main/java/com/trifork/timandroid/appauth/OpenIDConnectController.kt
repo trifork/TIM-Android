@@ -32,16 +32,20 @@ interface OpenIDConnectController {
 
     /**
      * Perform a login with an existing [refreshToken], thereby skipping the main Open ID Connect flow
+     * @return a updated JWT
      */
     fun silentLogin(scope: CoroutineScope, refreshToken: JWT): Deferred<TIMResult<JWT, TIMAuthError>>
 
     /**
-     * // TODO: Missing docs - MFJ (21/09/2021)
+     * Gets existing or retrieves a updated JWT using app auth.
+     * Use this function to get the access token instead of storing it in a local variable.
+     * Making sure you have the latest accessToken at all times.
+     * @return a updated JWT
      */
     fun accessToken(scope: CoroutineScope, forceRefresh: Boolean): Deferred<TIMResult<JWT, TIMAuthError>>
 
     /**
-     * // TODO: Missing docs - MFJ (21/09/2021)
+     * Get the refresh token
      */
     fun refreshToken(): JWT?
 

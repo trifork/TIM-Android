@@ -13,15 +13,13 @@ sealed class TIMError : Throwable() {
 
 sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
 
-    //TODO MISSING WHAT ERROR SHOULD BE HERE
     class AuthStateWasNull : TIMAuthError()
-
+    class FailedToValidateIDToken(error: Throwable) : TIMAuthError(error)
 
     //region AccessToken
-    //TODO Which errors do we push for the AccessToken related errors?
-    class FailedToGetAccessToken : TIMAuthError()
-    class FailedToGetRefreshToken : TIMAuthError()
-    class FailedToGetRequiredDataInToken : TIMAuthError()
+    object FailedToGetAccessToken : TIMAuthError()
+    object FailedToGetRefreshToken : TIMAuthError()
+    object FailedToGetRequiredDataInToken : TIMAuthError()
     //endregion
 
     class AppAuthNetworkError(error: Throwable) : TIMAuthError(error)
@@ -47,6 +45,9 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
                 AuthorizationException.TYPE_GENERAL_ERROR ->
                     when (error.code) {
                         AuthorizationException.GeneralErrors.NETWORK_ERROR.code -> AppAuthNetworkError(
+                            error
+                        )
+                        AuthorizationException.GeneralErrors.ID_TOKEN_VALIDATION_ERROR.code -> FailedToValidateIDToken(
                             error
                         )
                         else -> AppAuthFailed(error)
@@ -88,7 +89,7 @@ sealed class TIMStorageError : TIMError() {
 
     /**
      * Determines whether this error is a specific kind of key service error.
-     * @param keyServiceError The key service error to look for. If [null] is passed it will look for any kind of key service error.
+     * @param keyServiceError The key service error to look for. If null is passed it will look for any kind of key service error.
      */
     private fun isKeyServiceErrorInternal(keyServiceError: TIMKeyServiceError? = null): Boolean =
         when (this) {

@@ -13,8 +13,7 @@ import javax.crypto.Cipher
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-//TODO Make this private
-object TIMBiometric {
+internal object TIMBiometric {
     fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricUtil, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMStorageError>> = scope.async {
         suspendCoroutine { continuation ->
             timBiometricUtil.showBiometricPrompt(

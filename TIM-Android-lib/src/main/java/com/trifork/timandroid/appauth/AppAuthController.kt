@@ -123,11 +123,9 @@ class AppAuthController(
             if (newJWT != null) {
                 return@async newJWT.toTIMSuccess()
             }
-            //TODO Which error do we push to FailedToGetRequiredDataInToken?
-            return@async TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
+            return@async TIMAuthError.FailedToGetRequiredDataInToken.toTIMFailure()
         }
-        //TODO Which error do we push to FailedToGetAccessToken?
-        return@async TIMAuthError.FailedToGetAccessToken().toTIMFailure()
+        return@async TIMAuthError.FailedToGetAccessToken.toTIMFailure()
     }
 
     private fun buildAuthorizationResponseFromConfig(serviceConfiguration: AuthorizationServiceConfiguration) =
@@ -146,7 +144,7 @@ class AppAuthController(
             is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
             is TIMResult.Success -> {
                 val jwt = JWT.newInstance(freshTokenResult.value)
-                jwt?.toTIMSuccess() ?: TIMAuthError.FailedToGetRequiredDataInToken().toTIMFailure()
+                jwt?.toTIMSuccess() ?: TIMAuthError.FailedToGetRequiredDataInToken.toTIMFailure()
             }
         }
     }
@@ -192,7 +190,7 @@ class AppAuthController(
                         handleAppAuthCallback(
                             accessToken,
                             error,
-                            TIMAuthError.FailedToGetAccessToken()
+                            TIMAuthError.FailedToGetAccessToken
                         )
                     )
                 }

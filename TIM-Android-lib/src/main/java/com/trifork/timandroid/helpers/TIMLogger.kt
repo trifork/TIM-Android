@@ -20,7 +20,7 @@ class TIMLoggerInternal : TIMLogger {
     }
 }
 
-class TIMEncryptedStorageLoggerInternal : TIMEncryptedStorageLogger {
+internal class TIMEncryptedStorageLoggerInternal : TIMEncryptedStorageLogger {
     override fun log(priority: Int, tag: String, msg: String, throwable: Throwable?) {
         TIM.logger?.log(priority, tag, msg, throwable)
     }

@@ -99,6 +99,6 @@ internal class TIMAuthInternal(
             }
         }
 
-        return@async TIMError.Auth(TIMAuthError.FailedToGetRefreshToken()).toTIMFailure()
+        return@async TIMError.Auth(TIMAuthError.FailedToGetRefreshToken).toTIMFailure()
     }
 }
