@@ -119,11 +119,11 @@ class AppAuthController(
         val newAuthStateAccessToken = newAuthState.accessToken
 
         if (newAuthStateAccessToken != null) {
-            val newJWT = JWT.newInstance(newAuthStateAccessToken)
-            if (newJWT != null) {
-                return@async newJWT.toTIMSuccess()
+            val newJWTResult = JWT.newInstance(newAuthStateAccessToken)
+            return@async when(newJWTResult) {
+                is TIMResult.Failure -> TIMAuthError.FailedToGetRequiredDataInToken(newJWTResult.error).toTIMFailure()
+                is TIMResult.Success -> newJWTResult
             }
-            return@async TIMAuthError.FailedToGetRequiredDataInToken.toTIMFailure()
         }
         return@async TIMAuthError.FailedToGetAccessToken.toTIMFailure()
     }
@@ -143,8 +143,11 @@ class AppAuthController(
         return@async when (freshTokenResult) {
             is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
             is TIMResult.Success -> {
-                val jwt = JWT.newInstance(freshTokenResult.value)
-                jwt?.toTIMSuccess() ?: TIMAuthError.FailedToGetRequiredDataInToken.toTIMFailure()
+                val newJWT = JWT.newInstance(freshTokenResult.value)
+                when (newJWT) {
+                    is TIMResult.Failure -> TIMAuthError.FailedToGetRequiredDataInToken(newJWT.error).toTIMFailure()
+                    is TIMResult.Success -> newJWT
+                }
             }
         }
     }
@@ -152,7 +155,8 @@ class AppAuthController(
     override fun refreshToken(): JWT? {
         val refreshToken = authState?.refreshToken
         return if (refreshToken != null) {
-            JWT.newInstance(refreshToken)
+            val jwt = JWT.newInstance(refreshToken)
+            if(jwt is TIMResult.Success) jwt.value else null
         } else {
             null
         }

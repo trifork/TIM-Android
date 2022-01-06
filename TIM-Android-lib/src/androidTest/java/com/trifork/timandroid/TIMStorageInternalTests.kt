@@ -4,8 +4,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.JWT
+import com.trifork.timandroid.helpers.JWTString
 import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
-import com.trifork.timandroid.helpers.userId
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timandroid.models.errors.TIMStorageError
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
 
-    private val testRefreshToken: JWT = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")!!
+    private val testRefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")
 
     @Test
     fun testStoreRefreshTokenWithNewPassword() = runBlocking {
@@ -43,8 +43,7 @@ class TIMStorageInternalTests {
     @Test
     fun testStoreRefreshTokenWithExistingPassword() = runBlocking {
         val newRefreshToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c"
-        val updatedRefreshTokenJwt = JWT.newInstance(newRefreshToken)!!
-        assertEquals(newRefreshToken.userId, testRefreshToken.userId)
+        val updatedRefreshTokenJwt = JWTHelper(newRefreshToken)
 
         val storage = dataStorage()
 
@@ -122,7 +121,7 @@ class TIMStorageInternalTests {
 
     @Test
     fun testStoreRefreshTokenWithLongSecret() = runBlocking {
-        val jwt = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")!!
+        val jwt = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")!!
         val longSecret = "xe6XhucZ0BnH3yLQFR1wrZgPe3l4q/ymnQCCY/iZs3A="
 
         val storage = dataStorage()
@@ -156,9 +155,9 @@ class TIMStorageInternalTests {
     @Test
     fun testMultipleUsers() = runBlocking {
         setupPresentBiometricPrompt()
-        val user1RefreshToken = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.El5bSmm8IPR4M11wg6mMCwnlx2hP7x4XZiaORoTWafY")!!
+        val user1RefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.El5bSmm8IPR4M11wg6mMCwnlx2hP7x4XZiaORoTWafY")
         val user1Password = "1234"
-        val user2RefreshToken = JWT.newInstance("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.q0FBllJKYNGIDEsHj8d0yIGLCaANkyjxER_l1Xm4P50")!!
+        val user2RefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.q0FBllJKYNGIDEsHj8d0yIGLCaANkyjxER_l1Xm4P50")
         val user2Password = "4321"
         val storage = dataStorage(TIMESEncryptionMethod.AesGcm, setupKeyServiceSupportingMultipleUsers())
 
@@ -266,6 +265,11 @@ class TIMStorageInternalTests {
                 getKeyViaLongSecret(any(), any(), timKeyModelTwo.keyId).await()
             } returns timKeyModelTwo.toTIMSuccess()
         }
+    }
+
+    private fun JWTHelper(jwtString: JWTString) : JWT {
+        val jwtResult = JWT.newInstance(jwtString) as TIMResult.Success
+        return jwtResult.value
     }
 
     //endregion

@@ -1,26 +1,32 @@
 package com.trifork.timandroid.helpers
 
 import android.util.Base64
+import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.toTIMFailure
+import com.trifork.timencryptedstorage.models.toTIMSuccess
 import org.json.JSONObject
 import kotlin.math.ceil
 
 object JWTDecoder {
 
-    fun decode(jwtToken: String) : Map<String, Any> {
+    fun decode(jwtToken: String) : TIMResult<Map<String, Any>, Throwable> {
         val segments = jwtToken.split(".")
-        return if(segments.size > 2) decodeJWTPart(segments.get(1)) else hashMapOf()
+        return if(segments.size > 2) decodeJWTPart(segments.get(1)) else Throwable("Missing jwt segment 1").toTIMFailure()
     }
 
-    //TODO(Introduce moshi when implementing API)
-    private fun decodeJWTPart(value: String) : Map<String, Any> {
-        //Surround by catch
-        val bodyData = base64UrlDecode(value)
-        val json = JSONObject(String(bodyData))
-        val list = HashMap<String, Any>()
-        json.keys().forEach {
-            list[it] = json.get(it)
+    private fun decodeJWTPart(value: String) : TIMResult<Map<String, Any>, Throwable> {
+        return try {
+            val bodyData = base64UrlDecode(value)
+            val json = JSONObject(String(bodyData))
+            val list = HashMap<String, Any>()
+            json.keys().forEach {
+                list[it] = json.get(it)
+            }
+            list.toTIMSuccess()
         }
-        return list
+        catch (throwable: Throwable) {
+            throwable.toTIMFailure()
+        }
     }
 
     private fun base64UrlDecode(value: String) : ByteArray {

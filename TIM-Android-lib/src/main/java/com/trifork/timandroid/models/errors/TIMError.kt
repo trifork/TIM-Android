@@ -14,16 +14,16 @@ sealed class TIMError : Throwable() {
 sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
 
     class AuthStateWasNull : TIMAuthError()
-    class FailedToValidateIDToken(error: Throwable) : TIMAuthError(error)
+    class FailedToValidateIDToken(val error: Throwable) : TIMAuthError(error)
 
     //region AccessToken
     object FailedToGetAccessToken : TIMAuthError()
     object FailedToGetRefreshToken : TIMAuthError()
-    object FailedToGetRequiredDataInToken : TIMAuthError()
+    class FailedToGetRequiredDataInToken(val timEncryptedStorageError: TIMEncryptedStorageError) : TIMAuthError()
     //endregion
 
-    class AppAuthNetworkError(error: Throwable) : TIMAuthError(error)
-    class AppAuthFailed(error: Throwable) : TIMAuthError(error) {
+    class AppAuthNetworkError(val error: Throwable) : TIMAuthError(error)
+    class AppAuthFailed(val error: Throwable) : TIMAuthError(error) {
         constructor(unknownErrorMessage: String) : this(UnknownError(unknownErrorMessage))
     }
 

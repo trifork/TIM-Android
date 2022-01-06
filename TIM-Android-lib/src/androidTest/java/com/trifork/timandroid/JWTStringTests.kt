@@ -1,11 +1,11 @@
 package com.trifork.timandroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.JWTString
-import com.trifork.timandroid.helpers.expire
-import com.trifork.timandroid.helpers.issuer
-import com.trifork.timandroid.helpers.userId
-import org.junit.Assert.*
+import com.trifork.timencryptedstorage.models.TIMResult
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -16,23 +16,20 @@ class JWTStringTests {
     private val invalidJwt : JWTString = "INVALID"
 
     @Test
-    fun JWTString_userId() {
-        assertEquals("user", simpleAccessToken.userId)
-    }
+    fun JWT_newInstance() {
+        val jwtResult = JWT.newInstance(simpleAccessToken) as TIMResult.Success
+        val jwt = jwtResult.value
 
-    @Test
-    fun JWTString_issuer() {
-        assertEquals("https://trifork.com", simpleAccessToken.issuer)
-    }
-
-    @Test
-    fun JWTString_expire() {
-        assertEquals(1337, simpleAccessToken.expire)
+        assertEquals("user", jwt.userId)
+        assertEquals("https://trifork.com", jwt.issuer)
+        assertEquals("1970-01-01T00:22:17Z", jwt.expire)
     }
 
     @Test
     fun JWTString_Invalid() {
-        assertNull(invalidJwt.userId)
+        val jwtResult = JWT.newInstance(invalidJwt)
+
+        assertEquals(TIMResult.Failure::class, jwtResult::class)
     }
 
     @Test

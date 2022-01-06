@@ -1,7 +1,6 @@
 package com.trifork.timandroid.internal
 
 import android.util.Log.DEBUG
-import android.util.Log.ERROR
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIM
 import com.trifork.timandroid.TIMDataStorage
@@ -109,12 +108,11 @@ internal class TIMDataStorageInternal(
         return@async when (refreshToken) {
             is TIMResult.Success -> {
                 TIM.logger?.log(DEBUG, TAG, "Got refresh token")
-                val jwt = JWT.newInstance(refreshToken.value.convertToString())
-                if (jwt != null) {
-                    jwt.toTIMSuccess()
-                } else {
-                    TIM.logger?.log(ERROR, TAG, "Could not create JWT from received refresh token")
-                    TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
+                val jwtResult = JWT.newInstance(refreshToken.value.convertToString())
+
+                when (jwtResult) {
+                    is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(jwtResult.error).toTIMFailure()
+                    is TIMResult.Success -> jwtResult
                 }
             }
             is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(refreshToken.error).toTIMFailure()
@@ -216,15 +214,14 @@ internal class TIMDataStorageInternal(
         return@async when (getViaBiometricResult) {
             is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(getViaBiometricResult.error).toTIMFailure()
             is TIMResult.Success -> {
-                val jwt = JWT.newInstance(getViaBiometricResult.value.data.convertToString())
-                return@async if (jwt != null) {
-                    TIM.logger?.log(DEBUG, TAG, "Got decrypted jwt from encrypted storage")
-                    BiometricRefreshToken(
-                        jwt,
+                val jwtResult = JWT.newInstance(getViaBiometricResult.value.data.convertToString())
+
+                when (jwtResult) {
+                    is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(jwtResult.error).toTIMFailure()
+                    is TIMResult.Success -> BiometricRefreshToken(
+                        jwtResult.value,
                         getViaBiometricResult.value.longSecret
                     ).toTIMSuccess()
-                } else {
-                    TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
                 }
             }
         }
@@ -289,7 +286,7 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> dataResult.value
             is TIMResult.Failure -> return dataResult
         }
-
+        //Try to convert using provided convert function
         return try {
             convertCallback(data).toTIMSuccess()
         } catch (throwable: Throwable) {
@@ -326,7 +323,6 @@ internal class TIMDataStorageInternal(
     //endregion
 
     //region Biometric helpers
-
     /**
      * Enable biometric access to some resource for a given userId
      * @param scope the [CoroutineScope]
