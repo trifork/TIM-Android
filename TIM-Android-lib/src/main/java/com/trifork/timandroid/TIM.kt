@@ -1,8 +1,14 @@
 package com.trifork.timandroid
 
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
+import androidx.biometric.BiometricManager
 import com.trifork.timandroid.appauth.AppAuthController
-import com.trifork.timandroid.biometric.TIMBiometricUtil
+import com.trifork.timandroid.biometric.BiometricUtil
+import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.helpers.TIMLogger
 import com.trifork.timandroid.helpers.TIMLoggerInternal
@@ -45,7 +51,7 @@ object TIM {
      * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
      * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricUtil: TIMBiometricUtil, allowReconfigure: Boolean = false) {
+    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricUtil: TIMBiometricData = TIMBiometricData.Builder().build(), allowReconfigure: Boolean = false) {
 
         if (!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
@@ -53,8 +59,10 @@ object TIM {
 
         _logger = customLogger
 
+        val applicationContext = context.applicationContext
+
         val encryptedStorage = TIMEncryptedStorage(
-            TIMEncryptedSharedPreferences(context),
+            TIMEncryptedSharedPreferences(applicationContext),
             TIMEncryptedStorageLoggerInternal(),
             TIMKeyServiceImpl.getInstance(config.keyServiceConfig),
             config.encryptionMethod,
@@ -66,7 +74,7 @@ object TIM {
         )
         _auth = TIMAuthInternal(
             storage,
-            AppAuthController(config.oidcConfig, context)
+            AppAuthController(config.oidcConfig, applicationContext)
         )
 
         _storage = storage
@@ -84,4 +92,35 @@ object TIM {
         _storage = dataStorage
         _auth = auth
     }
+
+    //region biometric related util functions
+
+    /**
+     * Checks if Biometric Authentication is ready for the device
+     * @param context a context object
+     * @return true if the device is ready for biometric authentication
+     */
+    fun isBiometricReady(context: Context) = BiometricUtil.isBiometricReady(context)
+
+    /**
+     * Get the Biometric capability directly as a AuthenticationStatus Int. For more fine-grained handling of device biometric capability
+     * @param context a context object
+     * @return A [BiometricManager] AuthenticationStatus Int
+     */
+    fun hasBiometricCapability(context: Context) = BiometricUtil.hasBiometricCapability(context)
+
+    /**
+     * Create a intent that can be used to display a [Settings.ACTION_SECURITY_SETTINGS], the device settings screen for biometric setup
+     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after changing biometric auth settings
+     */
+    fun createBiometricSettingsIntent() = BiometricUtil.launchBiometricSettings()
+
+    /**
+     * Get a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action
+     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has completed biometric enrollment
+     */
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun createBiometricEnrollmentIntent() = BiometricUtil.configureBiometricEnrollmentIntent()
+
+    //endregion
 }

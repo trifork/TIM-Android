@@ -69,7 +69,7 @@ sealed class TIMStorageError : TIMError() {
     class IncompleteUserDataSet : TIMStorageError()
 
     //region Biometric errors
-    class BiometricAuthenticationError(errorCode: Int?, error: Throwable) : TIMStorageError()
+    class BiometricAuthenticationError(val errorCode: Int?, val error: Throwable) : TIMStorageError()
     //endregion
 
     fun isKeyLocked(): Boolean =

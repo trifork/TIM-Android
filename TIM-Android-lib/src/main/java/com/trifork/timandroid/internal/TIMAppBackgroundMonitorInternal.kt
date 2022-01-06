@@ -6,9 +6,6 @@ import com.trifork.timandroid.TIMAppBackgroundMonitor
 class TIMAppBackgroundMonitorInternal : TIMAppBackgroundMonitor {
 
     //TODO (The iOS SDK calls disable on destruction)
-
-
-
     override fun enable(durationSeconds: Int, handleTimeout: () -> Unit) {
         TODO("Not yet implemented")
     }

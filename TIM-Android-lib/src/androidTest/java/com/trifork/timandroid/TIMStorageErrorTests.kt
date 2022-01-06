@@ -30,8 +30,6 @@ class TIMStorageErrorTests {
 
     @Test
     fun testIsKeyServiceError() {
-        //TODO AuthenticationFailedForData is never thrown as of now
-        Assert.assertFalse(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(TIMSecureStorageError.AuthenticationFailedForData())).isKeyServiceError())
         Assert.assertTrue(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.KeyServiceFailed(TIMKeyServiceError.BadInternet())).isKeyServiceError())
         Assert.assertTrue(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.KeyServiceFailed(TIMKeyServiceError.KeyLocked())).isKeyServiceError())
         Assert.assertTrue(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.KeyServiceFailed(TIMKeyServiceError.BadPassword())).isKeyServiceError())
@@ -42,7 +40,6 @@ class TIMStorageErrorTests {
         Assert.assertFalse(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(TIMSecureStorageError.FailedToLoadData(Throwable("Test error!")))).isKeyLocked())
         Assert.assertFalse(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.KeyServiceFailed(TIMKeyServiceError.BadInternet())).isKeyLocked())
         Assert.assertFalse(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.KeyServiceFailed(TIMKeyServiceError.BadPassword())).isKeyLocked())
-        Assert.assertTrue(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(TIMSecureStorageError.AuthenticationFailedForData())).isBiometricFailedError())
     }
 
 }

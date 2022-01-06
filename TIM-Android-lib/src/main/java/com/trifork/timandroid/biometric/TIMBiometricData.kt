@@ -9,14 +9,13 @@ import androidx.annotation.RequiresApi
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricPrompt
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.trifork.timandroid.TIM
 import com.trifork.timandroid.models.errors.TIMStorageError
 import javax.crypto.Cipher
 
-class TIMBiometricUtil private constructor(
+class TIMBiometricData private constructor(
     private var title: String,
     private var subtitle: String,
     private var description: String,
@@ -49,37 +48,7 @@ class TIMBiometricUtil private constructor(
         fun negativeButtonText(negativeButtonText: String) = apply { this.negativeButtonText = negativeButtonText }
         fun setConfirmationRequired(confirmationRequired: Boolean) = apply { this.confirmationRequired = confirmationRequired }
 
-        fun build() = TIMBiometricUtil(this)
-    }
-
-    companion object {
-        /**
-         * Checks if Biometric Authentication is ready for the device
-         * @param context a context object
-         * @return true if the device is ready for biometric authentication
-         */
-        fun isBiometricReady(context: Context) = BiometricUtil.isBiometricReady(context)
-
-        /**
-         * Get the Biometric capability directly as a AuthenticationStatus Int. For more fine-grained handling of device biometric capability
-         * @param context a context object
-         * @return A [BiometricManager] AuthenticationStatus Int
-         */
-        fun hasBiometricCapability(context: Context) = BiometricUtil.hasBiometricCapability(context)
-
-        /**
-         * Navigates to Device Settings screen Biometric Setup
-         * @param context a context object
-         */
-        fun launchBiometricSettings(context: Context) = BiometricUtil.launchBiometricSettings(context)
-
-        /**
-         * Get a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action
-         * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has enrolled biometric auth
-         */
-        @RequiresApi(Build.VERSION_CODES.R)
-        fun biometricEnrollmentIntent() = BiometricUtil.configureBiometricEnrollmentIntent()
-
+        fun build() = TIMBiometricData(this)
     }
 
     fun showBiometricPrompt(
@@ -100,7 +69,7 @@ class TIMBiometricUtil private constructor(
     }
 }
 
-private object BiometricUtil {
+internal object BiometricUtil {
 
     private const val TAG = "BiometricUtil"
 
@@ -156,25 +125,19 @@ private object BiometricUtil {
     fun hasBiometricCapability(context: Context): Int = BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)
 
     /**
-     * Navigates to Device Settings screen Biometric Setup
+     * Create a intent that can be used to display a [Settings.ACTION_SECURITY_SETTINGS], the device settings screen for biometric setup
+     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after changing biometric auth settings
      */
-    fun launchBiometricSettings(context: Context) {
-        ActivityCompat.startActivity(
-            context,
-            Intent(Settings.ACTION_SECURITY_SETTINGS),
-            null
-        )
-    }
+    fun launchBiometricSettings() = Intent(Settings.ACTION_SECURITY_SETTINGS)
 
     /**
-     * Create a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action
+     * Create a intent that can be used to display a [Settings.ACTION_BIOMETRIC_ENROLL] action, a screen for configuration of biometric enrolment
      * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after the user has enrolled biometric auth
      */
     @RequiresApi(Build.VERSION_CODES.R)
     fun configureBiometricEnrollmentIntent() = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
         putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, BIOMETRIC_STRONG)
     }
-
     //endregion
 
     //region BiometricPrompt helpers

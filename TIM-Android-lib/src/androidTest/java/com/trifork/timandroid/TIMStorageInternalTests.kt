@@ -2,7 +2,7 @@ package com.trifork.timandroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.trifork.timandroid.biometric.TIMBiometric
-import com.trifork.timandroid.biometric.TIMBiometricUtil
+import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.helpers.userId
@@ -214,7 +214,7 @@ class TIMStorageInternalTests {
                 timKeyServiceStub,
                 encryptionMethod
             ),
-            TIMBiometricUtil.Builder().build()
+            TIMBiometricData.Builder().build()
         )
 
     private fun setupPresentBiometricPrompt() {

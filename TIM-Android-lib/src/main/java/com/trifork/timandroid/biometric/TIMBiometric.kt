@@ -1,7 +1,10 @@
 package com.trifork.timandroid.biometric
 
+import android.util.Log.DEBUG
+import android.util.Log.ERROR
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.Fragment
+import com.trifork.timandroid.TIM
 import com.trifork.timandroid.models.errors.TIMStorageError
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.toTIMFailure
@@ -14,18 +17,23 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 internal object TIMBiometric {
-    fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricUtil, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMStorageError>> = scope.async {
+
+    private val TAG = "TIMBiometric"
+
+    fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricData, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMStorageError>> = scope.async {
         suspendCoroutine { continuation ->
             timBiometricUtil.showBiometricPrompt(
                 fragment = fragment,
                 listener = object : BiometricAuthListener {
                     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
+                        TIM.logger?.log(DEBUG, TAG, "onBiometricAuthenticationSuccess")
                         continuation.resume(
                             handleBiometricAuthenticationCallback(result.cryptoObject?.cipher, TIMStorageError.BiometricAuthenticationError(null, Throwable("No cipher returned")))
                         )
                     }
 
                     override fun onBiometricAuthenticationError(error: TIMStorageError.BiometricAuthenticationError) {
+                        TIM.logger?.log(ERROR, TAG, "onBiometricAuthenticationError ${error.errorCode}", error)
                         continuation.resume(
                             error.toTIMFailure()
                         )

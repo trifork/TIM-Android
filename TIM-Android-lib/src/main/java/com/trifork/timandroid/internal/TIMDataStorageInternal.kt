@@ -1,9 +1,12 @@
 package com.trifork.timandroid.internal
 
+import android.util.Log.DEBUG
+import android.util.Log.ERROR
 import androidx.fragment.app.Fragment
+import com.trifork.timandroid.TIM
 import com.trifork.timandroid.TIMDataStorage
 import com.trifork.timandroid.biometric.TIMBiometric
-import com.trifork.timandroid.biometric.TIMBiometricUtil
+import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.ext.convertToByteArray
@@ -48,14 +51,17 @@ internal sealed class TIMDataStorageKey {
 
 internal class TIMDataStorageInternal(
     private val encryptedStorage: TIMEncryptedStorage,
-    private val timBiometricUtil: TIMBiometricUtil
+    private val timBiometricUtil: TIMBiometricData
 ) : TIMDataStorage {
+
+    companion object {
+        val TAG = "TIMDataStorageInternal"
+    }
 
     //region Available user ids
     override val availableUserIds: Set<String>
         get() {
-            val result = get<Set<String>?>(TIMDataStorageKey.AvailableUserIds) {
-                //TODO Can actually fail if the stored string is in a different format, handle JsonDecodingException
+            val result = getAndTryConvertCallback<Set<String>?>(TIMDataStorageKey.AvailableUserIds) {
                 Json.decodeFromString(it.convertToString())
             }
             return (result as? TIMResult.Success)?.value ?: emptySet()
@@ -81,31 +87,10 @@ internal class TIMDataStorageInternal(
     }
     //endregion
 
-
+    //region Password overrides
     override fun hasRefreshToken(userId: String): Boolean =
         encryptedStorage.hasValue(TIMDataStorageKey.RefreshToken(userId).storageKey) &&
                 encryptedStorage.hasValue(TIMDataStorageKey.KeyId(userId).storageKey)
-
-    override fun hasBiometricAccessForRefreshToken(userId: String): Boolean {
-        val keyIdResult = get(TIMDataStorageKey.KeyId(userId)) {
-            it.convertToString()
-        }
-
-        val keyId = when (keyIdResult) {
-            is TIMResult.Failure -> return false
-            is TIMResult.Success -> keyIdResult.value
-        }
-
-        return encryptedStorage.hasBiometricProtectedValue(TIMDataStorageKey.RefreshToken(userId).storageKey, keyId)
-    }
-
-    override fun disableBiometricAccessForRefreshToken(userId: String) {
-        val keyIdResult = get(TIMDataStorageKey.KeyId(userId)) {
-            it.convertToString()
-        }
-
-        if (keyIdResult is TIMResult.Success) encryptedStorage.removeLongSecret(keyIdResult.value)
-    }
 
     override fun getStoredRefreshToken(scope: CoroutineScope, userId: String, password: String): Deferred<TIMResult<JWT, TIMError>> = scope.async {
         val keyIdResult = getUserIdKeyId(userId)
@@ -115,16 +100,20 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> keyIdResult.value
         }
 
+        TIM.logger?.log(DEBUG, TAG, "Got key")
+
         val storageKey = TIMDataStorageKey.RefreshToken(userId).storageKey
 
         val refreshToken = encryptedStorage.get(scope, storageKey, keyId, password).await()
 
         return@async when (refreshToken) {
             is TIMResult.Success -> {
+                TIM.logger?.log(DEBUG, TAG, "Got refresh token")
                 val jwt = JWT.newInstance(refreshToken.value.convertToString())
                 if (jwt != null) {
                     jwt.toTIMSuccess()
                 } else {
+                    TIM.logger?.log(ERROR, TAG, "Could not create JWT from received refresh token")
                     TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
                 }
             }
@@ -132,70 +121,27 @@ internal class TIMDataStorageInternal(
         }
     }
 
-    private fun mapAndHandleKeyIdLoadError(secureStorageError: TIMSecureStorageError, userId: String): TIMError {
-        return when (secureStorageError) {
-            is TIMSecureStorageError.FailedToLoadData -> {
-                clear(userId)
-                TIMError.Storage(TIMStorageError.IncompleteUserDataSet())
-            }
-            is TIMSecureStorageError.FailedToStoreData -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(secureStorageError)))
-            is TIMSecureStorageError.AuthenticationFailedForData -> TODO("Not yet implemented")
-        }
-    }
-
-    override fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>> = scope.async {
-        val keyIdResult = getUserIdKeyId(userId)
-
-        val keyId = when (keyIdResult) {
-            is TIMResult.Failure -> return@async keyIdResult
-            is TIMResult.Success -> keyIdResult.value
-        }
-
-        val decryptionCipherResult = getBiometricCipher(scope, fragment) {
-            encryptedStorage.getDecryptCipher(keyId)
-        }.await()
-
-        val decryptionCipher = when (decryptionCipherResult) {
-            is TIMResult.Failure -> return@async decryptionCipherResult
-            is TIMResult.Success -> decryptionCipherResult.value
-        }
-
-        val getViaBiometricResult = encryptedStorage.getViaBiometric(scope, TIMDataStorageKey.RefreshToken(userId).storageKey, keyId, decryptionCipher).await()
-
-        return@async when (getViaBiometricResult) {
-            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(getViaBiometricResult.error).toTIMFailure()
-            is TIMResult.Success -> {
-                val jwt = JWT.newInstance(getViaBiometricResult.value.data.convertToString())
-
-                return@async if (jwt != null) {
-                    BiometricRefreshToken(
-                        jwt,
-                        getViaBiometricResult.value.longSecret
-                    ).toTIMSuccess()
-                } else {
-                    TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
-                }
-            }
-        }
-    }
-
     override fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String) = scope.async {
-        val keyIdResult = get(TIMDataStorageKey.KeyId(refreshToken.userId)) {
+        val keyIdResult = getAndTryConvertCallback(TIMDataStorageKey.KeyId(refreshToken.userId)) {
             it.convertToString()
         }
 
-        when (keyIdResult) {
-            is TIMResult.Success -> {
-                val storeResult = encryptedStorage.store(scope, TIMDataStorageKey.RefreshToken(refreshToken.userId).storageKey, refreshToken.token.convertToByteArray(), keyIdResult.value, password).await()
-                when (storeResult) {
-                    is TIMResult.Success -> {
-                        addAvailableUserId(refreshToken.userId)
-                        return@async Unit.toTIMSuccess()
-                    }
-                    is TIMResult.Failure -> return@async TIMError.Storage(TIMStorageError.EncryptedStorageFailed(storeResult.error)).toTIMFailure()
-                }
-            }
+        val keyId = when (keyIdResult) {
+            is TIMResult.Success -> keyIdResult.value
             is TIMResult.Failure -> return@async mapAndHandleKeyIdLoadError(keyIdResult.error, refreshToken.userId).toTIMFailure()
+        }
+
+        TIM.logger?.log(DEBUG, TAG, "Got key id")
+
+        val storeResult = encryptedStorage.store(scope, TIMDataStorageKey.RefreshToken(refreshToken.userId).storageKey, refreshToken.token.convertToByteArray(), keyId, password).await()
+
+        return@async when (storeResult) {
+            is TIMResult.Success -> {
+                addAvailableUserId(refreshToken.userId)
+                TIM.logger?.log(DEBUG, TAG, "Stored refreshToken and added userId to available user ids")
+                Unit.toTIMSuccess()
+            }
+            is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(storeResult.error)).toTIMFailure()
         }
     }
 
@@ -207,12 +153,81 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> storeWithNewKeyResult.value
         }
 
+        TIM.logger?.log(DEBUG, TAG, "Created new key using key server")
+
         disableBiometricAccessForRefreshToken(refreshToken.userId)
         store(keyCreation.keyId.convertToByteArray(), TIMDataStorageKey.KeyId(refreshToken.userId))
 
         addAvailableUserId(refreshToken.userId)
 
+        TIM.logger?.log(DEBUG, TAG, "Stored new key and added user id to available user ids")
+
         return@async keyCreation.toTIMSuccess()
+    }
+    //endregion
+
+    //region Biometric overrides
+    override fun hasBiometricAccessForRefreshToken(userId: String): Boolean {
+        val keyIdResult = getAndTryConvertCallback(TIMDataStorageKey.KeyId(userId)) {
+            it.convertToString()
+        }
+
+        val keyId = when (keyIdResult) {
+            is TIMResult.Failure -> return false
+            is TIMResult.Success -> keyIdResult.value
+        }
+
+        TIM.logger?.log(DEBUG, TAG, "Got key from key server")
+
+        return encryptedStorage.hasBiometricProtectedValue(TIMDataStorageKey.RefreshToken(userId).storageKey, keyId)
+    }
+
+    override fun disableBiometricAccessForRefreshToken(userId: String) {
+        val keyIdResult = getAndTryConvertCallback(TIMDataStorageKey.KeyId(userId)) {
+            it.convertToString()
+        }
+
+        if (keyIdResult is TIMResult.Success) encryptedStorage.removeLongSecret(keyIdResult.value)
+    }
+
+    override fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>> = scope.async {
+        val keyIdResult = getUserIdKeyId(userId)
+
+        val keyId = when (keyIdResult) {
+            is TIMResult.Failure -> return@async keyIdResult
+            is TIMResult.Success -> keyIdResult.value
+        }
+
+        TIM.logger?.log(DEBUG, TAG, "Got key id")
+
+        val decryptionCipherResult = getBiometricCipher(scope, fragment) {
+            encryptedStorage.getDecryptCipher(keyId)
+        }.await()
+
+        val decryptionCipher = when (decryptionCipherResult) {
+            is TIMResult.Failure -> return@async decryptionCipherResult
+            is TIMResult.Success -> decryptionCipherResult.value
+        }
+
+        TIM.logger?.log(DEBUG, TAG, "Got decryption cipher for biometric prompt")
+
+        val getViaBiometricResult = encryptedStorage.getViaBiometric(scope, TIMDataStorageKey.RefreshToken(userId).storageKey, keyId, decryptionCipher).await()
+
+        return@async when (getViaBiometricResult) {
+            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(getViaBiometricResult.error).toTIMFailure()
+            is TIMResult.Success -> {
+                val jwt = JWT.newInstance(getViaBiometricResult.value.data.convertToString())
+                return@async if (jwt != null) {
+                    TIM.logger?.log(DEBUG, TAG, "Got decrypted jwt from encrypted storage")
+                    BiometricRefreshToken(
+                        jwt,
+                        getViaBiometricResult.value.longSecret
+                    ).toTIMSuccess()
+                } else {
+                    TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.UnexpectedData()).toTIMFailure()
+                }
+            }
+        }
     }
 
     override fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>> {
@@ -231,7 +246,7 @@ internal class TIMDataStorageInternal(
     }
 
     override fun storeRefreshTokenWithLongSecret(scope: CoroutineScope, refreshToken: JWT, longSecret: String): Deferred<TIMResult<Unit, TIMError>> = scope.async {
-        val keyIdResult = get(TIMDataStorageKey.KeyId(refreshToken.userId)) {
+        val keyIdResult = getAndTryConvertCallback(TIMDataStorageKey.KeyId(refreshToken.userId)) {
             it.convertToString()
         }
 
@@ -254,22 +269,6 @@ internal class TIMDataStorageInternal(
         }
     }
 
-
-    //region NON-SECURE private read/write helpers
-    private fun <T> get(
-        key: TIMDataStorageKey,
-        convertCallback: (ByteArray) -> T
-    ): TIMResult<T, TIMSecureStorageError> {
-        val dataResult = encryptedStorage.secureStorage.get(key.storageKey)
-        return when (dataResult) {
-            is TIMResult.Success -> convertCallback(dataResult.value).toTIMSuccess()
-            is TIMResult.Failure -> dataResult
-        }
-    }
-
-    private fun store(data: ByteArray, key: TIMDataStorageKey) {
-        encryptedStorage.secureStorage.store(data, key.storageKey)
-    }
     //endregion
 
     override fun clear(userId: String) {
@@ -280,15 +279,48 @@ internal class TIMDataStorageInternal(
         removeAvailableUserId(userId)
     }
 
+    //region NON-SECURE private read/write helpers
+    private fun <T> getAndTryConvertCallback(
+        key: TIMDataStorageKey,
+        convertCallback: (ByteArray) -> T
+    ): TIMResult<T, TIMSecureStorageError> {
+        val dataResult = encryptedStorage.secureStorage.get(key.storageKey)
+        val data = when (dataResult) {
+            is TIMResult.Success -> dataResult.value
+            is TIMResult.Failure -> return dataResult
+        }
+
+        return try {
+            convertCallback(data).toTIMSuccess()
+        } catch (throwable: Throwable) {
+            TIMSecureStorageError.UnrecoverablyFailedToConvertData(throwable).toTIMFailure()
+        }
+    }
+
+    private fun store(data: ByteArray, key: TIMDataStorageKey) {
+        encryptedStorage.secureStorage.store(data, key.storageKey)
+    }
+    //endregion
+
     //region helpers
     private fun getUserIdKeyId(userId: String): TIMResult<String, TIMError> {
-        val keyIdResult = get(TIMDataStorageKey.KeyId(userId)) {
+        val keyIdResult = getAndTryConvertCallback(TIMDataStorageKey.KeyId(userId)) {
             it.convertToString()
         }
 
         return when (keyIdResult) {
             is TIMResult.Failure -> mapAndHandleKeyIdLoadError(keyIdResult.error, userId).toTIMFailure()
             is TIMResult.Success -> keyIdResult.value.toTIMSuccess()
+        }
+    }
+
+    private fun mapAndHandleKeyIdLoadError(secureStorageError: TIMSecureStorageError, userId: String): TIMError {
+        return when (secureStorageError) {
+            is TIMSecureStorageError.FailedToStoreData -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(TIMEncryptedStorageError.SecureStorageFailed(secureStorageError)))
+            else -> {
+                clear(userId)
+                TIMError.Storage(TIMStorageError.IncompleteUserDataSet())
+            }
         }
     }
     //endregion
