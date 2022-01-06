@@ -77,6 +77,11 @@ dependencies {
     //region Biometric
     implementation biometric.biometric
     //endregion
+
+    //region Lifecycle
+    implementation lifecycle.commonJava8
+    implementation lifecycle.androidx
+    //endregion
 }
 
 apply from: './publish.gradle'

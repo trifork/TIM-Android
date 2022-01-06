@@ -2,6 +2,7 @@ package com.trifork.timandroid.internal
 
 import android.content.Intent
 import androidx.fragment.app.Fragment
+import com.trifork.timandroid.TIMAppBackgroundMonitor
 import com.trifork.timandroid.TIMAuth
 import com.trifork.timandroid.TIMDataStorage
 import com.trifork.timandroid.appauth.OpenIDConnectController
@@ -17,7 +18,8 @@ import kotlinx.coroutines.async
 
 internal class TIMAuthInternal(
     private val storage: TIMDataStorage,
-    private val openIdController: OpenIDConnectController
+    private val openIdController: OpenIDConnectController,
+    private val backgroundMonitor: TIMAppBackgroundMonitor
 ) : TIMAuth {
 
     override fun isLoggedIn(): Boolean = openIdController.isLoggedIn()
@@ -100,5 +102,18 @@ internal class TIMAuthInternal(
         }
 
         return@async TIMError.Auth(TIMAuthError.FailedToGetRefreshToken).toTIMFailure()
+    }
+
+    override fun enableBackgroundTimeout(durationSeconds: Long, timeoutHandler: () -> Unit) {
+        backgroundMonitor.enable(durationSeconds) {
+            if(this.isLoggedIn()) {
+                this.logout()
+                timeoutHandler()
+            }
+        }
+    }
+
+    override fun disableBackgroundTimeout() {
+        backgroundMonitor.disable()
     }
 }

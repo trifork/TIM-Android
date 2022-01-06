@@ -59,4 +59,13 @@ ext {
     biometric = [
             biometric: "androidx.biometric:biometric-ktx:$biometric_version"
     ]
+    //endregion
+
+    //region Lifecycle
+    androidx_lifecycle_version = "2.4.0"
+    lifecycle = [
+            commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
+            androidx: "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
+    ]
+    //endregion
 }

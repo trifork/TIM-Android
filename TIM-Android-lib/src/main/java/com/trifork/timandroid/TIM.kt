@@ -12,6 +12,7 @@ import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.helpers.TIMLogger
 import com.trifork.timandroid.helpers.TIMLoggerInternal
+import com.trifork.timandroid.internal.TIMAppBackgroundMonitorInternal
 import com.trifork.timandroid.internal.TIMAuthInternal
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.TIMConfiguration
@@ -74,7 +75,8 @@ object TIM {
         )
         _auth = TIMAuthInternal(
             storage,
-            AppAuthController(config.oidcConfig, applicationContext)
+            AppAuthController(config.oidcConfig, applicationContext),
+            TIMAppBackgroundMonitorInternal()
         )
 
         _storage = storage

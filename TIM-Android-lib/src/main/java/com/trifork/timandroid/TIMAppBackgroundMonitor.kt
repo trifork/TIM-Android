@@ -10,7 +10,7 @@ interface TIMAppBackgroundMonitor {
      * @param durationSeconds The duration (seconds) the app may be in the background. When this value is exceeded it will invoke "handleTimeout"
      * @param handleTimeout The function that is invoked when the timeout occurs
      */
-    fun enable(durationSeconds: Int, handleTimeout: () -> Unit)
+    fun enable(durationSeconds: Long, handleTimeout: () -> Unit)
 
     /**
      *  Disables the background duration detection.
