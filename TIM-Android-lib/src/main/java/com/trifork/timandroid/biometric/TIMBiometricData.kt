@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
+import android.util.Log.DEBUG
 import androidx.annotation.RequiresApi
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
@@ -103,6 +103,8 @@ internal object BiometricUtil {
             confirmationRequired
         )
 
+        TIM.logger?.log(DEBUG, TAG, "Created BiometricPromptInfo")
+
         // Attach with caller and callback handler
         val biometricPrompt = initBiometricPrompt(fragment, listener)
 
@@ -110,6 +112,8 @@ internal object BiometricUtil {
         biometricPrompt.apply {
             authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         }
+
+        TIM.logger?.log(DEBUG, TAG, "Presented BiometricPrompt")
     }
 
     //region Utility functions
@@ -122,7 +126,7 @@ internal object BiometricUtil {
     /**
      * Get the biometric capability AuthenticationStatus from [BiometricManager]
      */
-    fun hasBiometricCapability(context: Context): Int = BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)
+    fun hasBiometricCapability(context: Context): TIMBiometricAuthentication = BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)
 
     /**
      * Create a intent that can be used to display a [Settings.ACTION_SECURITY_SETTINGS], the device settings screen for biometric setup
@@ -165,7 +169,7 @@ internal object BiometricUtil {
                 super.onAuthenticationFailed()
                 //This is called when the biometric authentication fails due to the user placing wrong finger on sensor, system cant read it, system cant detect face, etc.
                 //So this is "soft-failures", not because something crashed/is wrong
-                TIM.logger?.log(Log.DEBUG, TAG, "Authentication with biometric soft-failed")
+                TIM.logger?.log(DEBUG, TAG, "Authentication with biometric soft-failed")
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {

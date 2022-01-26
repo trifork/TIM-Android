@@ -28,14 +28,14 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
     }
 
     //region Service Discovery
-    class FailedToDiscoverConfiguration(error: Throwable?) :
+    class FailedToDiscoverConfiguration(val error: Throwable?) :
         TIMAuthError(error ?: UnknownError("Failed to get discover result and error was null"))
     //endregion
 
-    class RefreshTokenExpired(error: Throwable) : TIMAuthError(error)
+    class RefreshTokenExpired(val error: Throwable) : TIMAuthError(error)
 
     //region Registration
-    class NoSuitableBrowser(error: Throwable) : TIMAuthError(error)
+    class NoSuitableBrowser(val error: Throwable) : TIMAuthError(error)
     object NoRegistrationIntentData : TIMAuthError(Exception("No data was found in the registration result intent"))
     //endregion
 
@@ -122,6 +122,13 @@ sealed class TIMStorageError : TIMError() {
                 }
             }
             is IncompleteUserDataSet -> false
+        }
+
+    //TODO Added this, should it be on Auth error like iOS .isSafariViewControllerCancelled error?
+    fun isBiometricCanceledError(): Boolean =
+        when (this) {
+            is BiometricAuthenticationError -> this.errorCode == 13
+            else -> false
         }
 
     //region Registration

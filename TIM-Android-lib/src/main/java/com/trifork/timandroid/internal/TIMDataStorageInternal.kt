@@ -218,10 +218,13 @@ internal class TIMDataStorageInternal(
 
                 when (jwtResult) {
                     is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(jwtResult.error).toTIMFailure()
-                    is TIMResult.Success -> BiometricRefreshToken(
-                        jwtResult.value,
-                        getViaBiometricResult.value.longSecret
-                    ).toTIMSuccess()
+                    is TIMResult.Success -> {
+                        TIM.logger?.log(DEBUG, TAG, "Decoded JWT successfully, returning BiometricRefreshToken")
+                        BiometricRefreshToken(
+                            jwtResult.value,
+                            getViaBiometricResult.value.longSecret
+                        ).toTIMSuccess()
+                    }
                 }
             }
         }

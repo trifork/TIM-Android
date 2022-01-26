@@ -41,7 +41,7 @@ interface TIMAuth {
     /**
      * Handles the data received from ChromeCustomTabs. The data can is the returned data in [ActivityResult] as a result of using a [ActivityResultLauncher]
      * @param url The url that was redirected to the app from CustomTabs
-     * @return True if TIM was able to handle the [url], otherwise false
+     * @return Unit if TIM was able to handle the [url], otherwise TIMAuthError
      */
     fun handleOpenIDConnectLoginResult(scope: CoroutineScope, dataIntent: Intent): Deferred<TIMResult<Unit, TIMAuthError>>
 
