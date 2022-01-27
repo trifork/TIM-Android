@@ -46,6 +46,24 @@ This will let your app catch the redirect from the chrome custom tabs when the u
 android.defaultConfig.manifestPlaceholders = ['appAuthRedirectScheme': 'my-app://']
 ````
 
+Furthermore the following needs to be added to your `AndroidManifest.xml` file, in order for the chrome custom tab to work
+
+```xml
+    <!-- App Auth -->
+    <activity
+        android:exported="true"
+        android:name="net.openid.appauth.RedirectUriReceiverActivity">
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.DEFAULT"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="${appAuthRedirectScheme}"/>
+        </intent-filter>
+    </activity>
+```
+
+You can find more information about this at the openid [AppAuth-Android repository](https://github.com/openid/AppAuth-Android)
+
 ## Common use cases
 
 ### 1. Register / OIDC Login
