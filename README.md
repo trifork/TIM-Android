@@ -311,13 +311,9 @@ TIM.auth.enableBackgroundTimeout {
 
 Most errors are helping you as a developer to figure out, what you might have configured wrongly. Once everything is configured at setup correctly it is a small set of errors, which is important to handle as specific errors:
 
-
 ```kotlin
 // Refresh token has expired
 TIMError.auth(TIMAuthError.refreshTokenExpired)
-
-// The user pressed cancel in the safari view controller during the OpenID Connect login
-TIMError.auth(TIMAuthError.safariViewControllerCancelled)
 
 TIMError.storage(
     TIMStorageError.encryptedStorageFailed(
