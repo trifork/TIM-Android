@@ -8,11 +8,20 @@ https://github.com/trifork/TIM-Example-Android
 
 ## Setup
 
-### Instalation
+### Installation
 
-Add this repo to your gradle file
+Add maven jit to your settings.gradle file and this repository to your gradle app file
+```groovy
+//Necessary in order for gradle to locate the github repository. Can be located in settings.gradle file
+dependencyResolutionManagement {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
 
+//In build.gradle :app file
 implementation "com.github.trifork:TIM-Android:1.0.0"
+```
 
 ### Setup configuration
 Before using any function or property from `TIM` you have to configure the framework by calling the `configure` method (typically you want to do this on app startup):
@@ -46,14 +55,19 @@ All users will have to register through a OpenID Connect login.
 First step is to get a Open ID Connect Login Intent and send it to a resultLauncher in order for us to start a activity with chrome tabs.
 The resultLauncher then retrieves the resulting intent with the login result, which we send to TIM using 'handleOpenIDConnectLoginResult'  
 ```kotlin
-lifecycleScope.launch {
+fun launchLogin() = lifecycleScope.launch {
     val intentResult = TIM.auth.getOpenIDConnectLoginIntent(this).await()
     when (intentResult) {
-        is TIMResult.Success -> resultLauncher.launch(intentResult.value)
-        is TIMResult.Failure -> Toast.makeText(activity, "Failed to get intentResult", Toast.LENGTH_LONG).show()
+        is TIMResult.Success -> {
+            //Calling the resultLauncher with the intent result value
+            resultLauncher.launch(intentResult.value)
+        }
+        is TIMResult.Failure -> {
+            //Failed to launch login
+        }
     }
 }
-
+//We want to have this in our fragment or activity in order for us to react upon the above launched login flow finishing
 val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
     if (result.resultCode == Activity.RESULT_OK) {
         val data: Intent? = result.data
@@ -82,10 +96,10 @@ version of the refresh token, such that the user only needs to provide the passw
 The user must have performed a successful OpenID Connect login before setting a password, since the refresh token has to be available.
 
 ````kotlin
-viewModelScope.launch {
+fun setPassword() = viewModelScope.launch {
     val refreshToken = TIM.auth.getRefreshToken()
     if (refreshToken != null) {
-        val storeResult = TIM.storage.storeRefreshTokenWithNewPassword(this, refreshToken, pinCode).await()
+        val storeResult = TIM.storage.storeRefreshTokenWithNewPassword(this, refreshToken, password).await()
 
         when (storeResult) {
             is TIMResult.Success -> {
@@ -146,7 +160,7 @@ After you have ensured that the user has access to and configure biometric authe
 The `userId` can be retrieved from the refresh token: `TIM.auth.refreshToken?.userId`
 
 ```kotlin
-viewModelScope.launch {
+fun enableBiometric() = viewModelScope.launch {
     val result = TIM.storage.enableBiometricAccessForRefreshToken(this, pinCode, userId, fragment).await()
 
     when (result) {
