@@ -90,9 +90,10 @@ object TIM {
      * @param dataStorage implementation of [TIMDataStorage]
      * @param auth implementation of [TIMAuth]
      */
-    fun configure(dataStorage: TIMDataStorage, auth: TIMAuth) {
+    fun configure(dataStorage: TIMDataStorage, auth: TIMAuth, customLogger: TIMLogger? = TIMLoggerInternal()) {
         _storage = dataStorage
         _auth = auth
+        _logger = customLogger
     }
 
     //region biometric related util functions

@@ -27,7 +27,7 @@ ext {
     //endregion
 
     //region TIM
-    TIMEncryptedStorage_version = "9c72f8f803"
+    TIMEncryptedStorage_version = "1.0.0"
     TIMEncryptedStorage = "com.github.trifork:TIMEncryptedStorage-Android:$TIMEncryptedStorage_version"
     //endregion
 
@@ -36,7 +36,7 @@ ext {
     appAuth = "net.openid:appauth:$appauth_version"
     //endregion
 
-    //TODO(Instrumented test is not yet supported in jUnit5? Therefore we still use 4)
+    // Instrumented test is not yet supported in jUnit5? Therefore we still use 4
     //region JUnit
     jUnit4_version = "4.13.2"
     jUnit = [

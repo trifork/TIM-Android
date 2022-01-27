@@ -39,6 +39,8 @@ sealed class TIMAuthError(val sourceError: Throwable? = null) : TIMError() {
     object NoRegistrationIntentData : TIMAuthError(Exception("No data was found in the registration result intent"))
     //endregion
 
+    fun isRefreshTokenExpiredError(): Boolean = this::class == RefreshTokenExpired::class
+
     companion object {
         fun mapAppAuthError(error: AuthorizationException): TIMResult.Failure<TIMAuthError> =
             when (error.type) {
