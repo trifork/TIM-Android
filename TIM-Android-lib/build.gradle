@@ -82,4 +82,4 @@ dependencies {
     //endregion
 }
 
-apply from: './publish.gradle'
+apply from: '../publish.gradle'
