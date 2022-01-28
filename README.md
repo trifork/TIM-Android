@@ -10,18 +10,31 @@ https://github.com/trifork/TIM-Example-Android
 
 ### Installation
 
-Add maven jit to your settings.gradle file and this repository to your gradle app file
+Add maven jitpack.io to your settings.gradle file and this repository to your gradle app file
 ```groovy
-//Necessary in order for gradle to locate the github repository. Can be located in settings.gradle file
+//Necessary for gradle to locate the github repository. Should be located in project settings.gradle file
 dependencyResolutionManagement {
     repositories {
         maven { url 'https://jitpack.io' }
     }
 }
-
-//In build.gradle :app file
-implementation "com.github.trifork:TIM-Android:1.0.0"
 ```
+
+Can also be added to your allProjects block if you are using a older gradle version
+````groovy
+//Necessary for gradle to locate the github repository. Can be located in app build.gradle file
+allproject{ 
+    repositories{
+        maven { url 'https://jitpack.io' } 
+    }
+}
+````
+
+Then add the TIM repository as dependency in your build.gradle :app file
+````groovy
+//In build.gradle :app file
+implementation "com.github.trifork:TIM-Android:$tim_version"
+````
 
 ### Setup configuration
 Before using any function or property from `TIM` you have to configure the framework by calling the `configure` method (typically you want to do this on app startup):

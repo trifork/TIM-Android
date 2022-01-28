@@ -50,7 +50,6 @@ dependencies {
     implementation androidX.appCompat
     //endregion
 
-
     //region Kotlin
     implementation kotlin.coroutinesAndroid.coroutinesAndroid
     testImplementation kotlin.coroutinesAndroid.coroutinesAndroidTest
@@ -66,8 +65,7 @@ dependencies {
     //endregion
 
     //region TIM
-    debugApi project(':TIMEncryptedStorage-Android')
-    releaseApi TIMEncryptedStorage
+    implementation TIMEncryptedStorage
     //endregion
 
     //region AppAuth

@@ -8,6 +8,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "TIM-Android"
 include ':TIM-Android-lib'
-
-include ':TIMEncryptedStorage-Android'
-project(':TIMEncryptedStorage-Android').projectDir = new File('../TIMEncryptedStorage-Android/library')
