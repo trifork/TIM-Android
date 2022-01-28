@@ -65,7 +65,7 @@ dependencies {
     //endregion
 
     //region TIM
-    implementation TIMEncryptedStorage
+    api TIMEncryptedStorage
     //endregion
 
     //region AppAuth
