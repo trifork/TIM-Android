@@ -111,11 +111,11 @@ internal class TIMDataStorageInternal(
                 val jwtResult = JWT.newInstance(refreshToken.value.convertToString())
 
                 when (jwtResult) {
-                    is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(jwtResult.error).toTIMFailure()
+                    is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(jwtResult.error)).toTIMFailure()
                     is TIMResult.Success -> jwtResult
                 }
             }
-            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(refreshToken.error).toTIMFailure()
+            is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(refreshToken.error)).toTIMFailure()
         }
     }
 
@@ -212,12 +212,12 @@ internal class TIMDataStorageInternal(
         val getViaBiometricResult = encryptedStorage.getViaBiometric(scope, TIMDataStorageKey.RefreshToken(userId).storageKey, keyId, decryptionCipher).await()
 
         return@async when (getViaBiometricResult) {
-            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(getViaBiometricResult.error).toTIMFailure()
+            is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(getViaBiometricResult.error)).toTIMFailure()
             is TIMResult.Success -> {
                 val jwtResult = JWT.newInstance(getViaBiometricResult.value.data.convertToString())
 
                 when (jwtResult) {
-                    is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(jwtResult.error).toTIMFailure()
+                    is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(jwtResult.error)).toTIMFailure()
                     is TIMResult.Success -> {
                         TIM.logger?.log(DEBUG, TAG, "Decoded JWT successfully, returning BiometricRefreshToken")
                         BiometricRefreshToken(
@@ -264,7 +264,7 @@ internal class TIMDataStorageInternal(
         ).await()
 
         return@async when (storeResult) {
-            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(storeResult.error).toTIMFailure()
+            is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(storeResult.error)).toTIMFailure()
             is TIMResult.Success -> Unit.toTIMSuccess()
         }
     }
@@ -357,7 +357,7 @@ internal class TIMDataStorageInternal(
         val enableBiometricResult = enableBiometricAccessFunction(keyId, encryptionCipher).await()
 
         return@async when (enableBiometricResult) {
-            is TIMResult.Failure -> TIMStorageError.EncryptedStorageFailed(enableBiometricResult.error).toTIMFailure()
+            is TIMResult.Failure -> TIMError.Storage(TIMStorageError.EncryptedStorageFailed(enableBiometricResult.error)).toTIMFailure()
             is TIMResult.Success -> enableBiometricResult.value.toTIMSuccess()
         }
     }
