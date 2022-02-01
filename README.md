@@ -33,7 +33,7 @@ allproject{
 Then add the TIM repository as dependency in your build.gradle :app file
 ````groovy
 //In build.gradle :app file
-implementation "com.github.trifork:TIM-Android:$tim_version"
+implementation "com.github.trifork:tim-android:$tim_version"
 ````
 
 ### Setup configuration
@@ -412,5 +412,23 @@ Every dependency in `TIM` is build upon interfaces, such that you can implement 
 ⚠️ **NOTE:** This `configure` method allows you to change the `TIM` behaviour. We strongly recommend that you only use the above `configure` method for testing!
 
 ---
+
+## For developers of TIM
+
+### Development environment
+Each project has a development build variant that makes it possible to build the projects using local copies of the repositories for faster iteration.
+
+When selecting the development build variant for the example project or TIM, gradle will use the projects located in the same root folder as the project itself as the source for TIM and TIMEncryptedStorage.
+
+Other build variants use the defined version from github. The debug build uses the github version in order for new developers to download the example project and just run it without needing extra work besides synchronizing and building the project.   
+
+### Deployment
+TIM and TIMEncryptedStorage are both distributed using a simple jitpack setup. Each project has a publish.gradle file determining the publishing configuration.
+
+For now releasing of TIM and TIMEncryptedStorage has been achieved using the Github release interface, tagging the given commit with the version code. 
+This makes it possible to refer to the version tag in gradle, as jitpack automatically creates a release using the version tag. 
+
+There are several neat functions in jitpack making it possible to get untagged builds using gradle as well if needed.
+Please refer to the official jitpack documentation for more information about how jitpack works: https://jitpack.io/docs/
 
 ![Trifork Logo](https://jira.trifork.com/s/-p6q4kx/804003/9c3efa9da3fa1ef9d504f68de6c57528/_/jira-logo-scaled.png)

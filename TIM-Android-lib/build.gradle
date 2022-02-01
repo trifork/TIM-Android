@@ -24,6 +24,9 @@ android {
     }
 
     buildTypes {
+        development {
+
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -65,7 +68,9 @@ dependencies {
     //endregion
 
     //region TIM
-    api TIMEncryptedStorage
+    releaseApi timEncryptedStorage
+    debugApi timEncryptedStorage
+    developmentApi project(':TIMEncryptedStorage-Android')
     //endregion
 
     //region AppAuth

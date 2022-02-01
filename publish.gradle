@@ -5,8 +5,8 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'com.trifork'
-                artifactId = 'TIM-Android'
+                groupId = 'com.trifork.tim'
+                artifactId = 'tim'
             }
         }
     }
