@@ -429,6 +429,7 @@ For now releasing of TIM and TIMEncryptedStorage has been achieved using the Git
 This makes it possible to refer to the version tag in gradle, as jitpack automatically creates a release using the version tag. 
 
 There are several neat functions in jitpack making it possible to get untagged builds using gradle as well if needed.
-Please refer to the official jitpack documentation for more information about how jitpack works: https://jitpack.io/docs/
+Please refer to the official jitpack documentation for more information about how jitpack works: https://jitpack.io/docs/ or googles documentation at https://developer.android.com/studio/build/maven-publish-plugin
+
 
 ![Trifork Logo](https://jira.trifork.com/s/-p6q4kx/804003/9c3efa9da3fa1ef9d504f68de6c57528/_/jira-logo-scaled.png)
