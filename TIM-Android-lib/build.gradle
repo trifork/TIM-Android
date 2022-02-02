@@ -10,6 +10,8 @@ apply from: '../dependencies.gradle'
 android {
     compileSdk 31
 
+    testBuildType "development"
+
     defaultConfig {
         minSdk 28
         targetSdk 30
