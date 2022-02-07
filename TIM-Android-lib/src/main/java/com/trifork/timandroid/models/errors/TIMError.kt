@@ -74,11 +74,32 @@ sealed class TIMStorageError : TIMError() {
     class BiometricAuthenticationError(val errorCode: Int?, val error: Throwable) : TIMStorageError()
     //endregion
 
+    /**
+     * Determines whether this error means the key is locked because of too many incorrect password attempts
+     * In which case we would need the user to authenticate again
+     */
     fun isKeyLocked(): Boolean =
         isKeyServiceErrorInternal(TIMKeyServiceError.KeyLocked())
 
+    /**
+     * Determines whether this error means the password was incorrect
+     */
     fun isWrongPassword(): Boolean =
         isKeyServiceErrorInternal(TIMKeyServiceError.BadPassword())
+
+    /**
+     * Determines whether this error means that fingerprints were added or completely removed
+     * In which case we would need the user to authenticate again
+     */
+    fun isBiometricAuthenticationInvalidated() : Boolean =
+        when (this) {
+            is EncryptedStorageFailed -> {
+                this.timEncryptedStorageError::class == TIMEncryptedStorageError.InvalidEncryptionKey::class
+            }
+            else -> {
+                false
+            }
+        }
 
     /**
      *   Determines whether this error is an error thrown by the KeyService.
