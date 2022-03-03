@@ -84,6 +84,16 @@ interface TIMDataStorage {
     fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
 
     /**
+     * Enables biometric protection access for refresh token using longSecret.
+     * @param scope the [CoroutineScope] eg. a viewModelScope
+     * @param longSecret The long secret that was created upon creation of the password.
+     * @param userId The [userId] for the refresh token.
+     * @param fragment a fragment for displaying the biometric authentication prompt
+     * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
+     */
+    fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
+
+    /**
      * Stores a refresh token using long secret instead of password.
      * It is unlikely, that you will need to use this method, unless you are doing something custom. TIM does use this method internally to keep refresh tokens up-to-date even when logging in with biometric access.
      * @param scope the [CoroutineScope] eg. a viewModelScope
@@ -93,13 +103,5 @@ interface TIMDataStorage {
      */
     fun storeRefreshTokenWithLongSecret(scope: CoroutineScope, refreshToken: JWT, longSecret: String): Deferred<TIMResult<Unit, TIMError>>
 
-    /**
-     * Enables biometric protection access for refresh token using longSecret.
-     * @param scope the [CoroutineScope] eg. a viewModelScope
-     * @param longSecret The long secret that was created upon creation of the password.
-     * @param userId The [userId] for the refresh token.
-     * @param fragment a fragment for displaying the biometric authentication prompt
-     * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
-     */
-    fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
+
 }

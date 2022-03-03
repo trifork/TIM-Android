@@ -94,7 +94,10 @@ sealed class TIMStorageError : TIMError() {
     fun isBiometricAuthenticationInvalidated() : Boolean =
         when (this) {
             is EncryptedStorageFailed -> {
-                this.timEncryptedStorageError::class == TIMEncryptedStorageError.InvalidEncryptionKey::class
+                when (this.timEncryptedStorageError) {
+                    is TIMEncryptedStorageError.InvalidEncryptionKey -> true
+                    else -> false
+                }
             }
             else -> {
                 false

@@ -198,9 +198,7 @@ internal class TIMDataStorageInternal(
 
         TIM.logger?.log(DEBUG, TAG, "Got key id")
 
-        val decryptionCipherResult = getBiometricCipher(scope, fragment) {
-            encryptedStorage.getDecryptCipher(keyId)
-        }.await()
+        val decryptionCipherResult = getBiometricCipher(scope, fragment, encryptedStorage.getDecryptCipher(keyId)).await()
 
         val decryptionCipher = when (decryptionCipherResult) {
             is TIMResult.Failure -> return@async decryptionCipherResult
@@ -230,15 +228,22 @@ internal class TIMDataStorageInternal(
         }
     }
 
+    //TODO Expand javadoc
+    /**
+     * Used to enable biometric access. Can be used to enable biometric access after the user has logged in.
+     */
     override fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>> {
-        return enableBiometricAccess(scope, userId, fragment) { keyId, encryptionCipher ->
+        return getKeyIdAndBiometricCipherEnableBiometricAccess(scope, userId, fragment) { keyId, encryptionCipher ->
             encryptedStorage.enableBiometric(scope, keyId, password, encryptionCipher)
         }
     }
 
+    /**
+     * Used to enable biometric access. Used during signup/registration flow where we have the longSecret available.
+     */
     override fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>> {
         //Enable biometric access, wrapped in a scope to be compatible with helper function
-        return enableBiometricAccess(scope, userId, fragment) { keyId, encryptionCipher ->
+        return getKeyIdAndBiometricCipherEnableBiometricAccess(scope, userId, fragment) { keyId, encryptionCipher ->
             scope.async {
                 encryptedStorage.enableBiometric(keyId, longSecret, encryptionCipher)
             }
@@ -327,14 +332,16 @@ internal class TIMDataStorageInternal(
 
     //region Biometric helpers
     /**
-     * Enable biometric access to some resource for a given userId
+     * Enable biometric access to some resource for a given userId.
+     * In order for us to enable biometric access, we need to fetch the key id, get a cipher from the biometric prompt and then save the resource.
+     * The functions goes through 3 steps: 1. get keyId. 2. Get cipher from user biometrics. 3. Run and handle result from parsed [enableBiometricAccessFunction].
      * @param scope the [CoroutineScope]
      * @param userId the userId for the user which should have biometric access to the resource
      * @param fragment for showing the biometric prompt
      * @param enableBiometricAccessFunction the function that determines the specific biometric access
      * @return a unit in case of success or a mapped TIMEncryptedStorageError
      */
-    private fun enableBiometricAccess(scope: CoroutineScope, userId: String, fragment: Fragment, enableBiometricAccessFunction: (keyId: String, encryptionCipher: Cipher) -> Deferred<TIMResult<Unit, TIMEncryptedStorageError>>) = scope.async {
+    private fun getKeyIdAndBiometricCipherEnableBiometricAccess(scope: CoroutineScope, userId: String, fragment: Fragment, enableBiometricAccessFunction: (keyId: String, encryptionCipher: Cipher) -> Deferred<TIMResult<Unit, TIMEncryptedStorageError>>) = scope.async {
         //Get the user id key id
         val keyIdResult = getUserIdKeyId(userId)
 
@@ -343,10 +350,12 @@ internal class TIMDataStorageInternal(
             is TIMResult.Success -> keyIdResult.value
         }
 
+        TIM.logger?.log(DEBUG, TAG, "getKeyIdAndBiometricCipherEnableBiometricAccess: Got key id")
+
         //Use getBiometricCipher to get the biometric cipher for encryption
-        val encryptionCipherResult = getBiometricCipher(scope, fragment) {
-            encryptedStorage.getEncryptCipher()
-        }.await()
+        val encryptionCipherResult = getBiometricCipher(scope, fragment, encryptedStorage.getEncryptCipher(keyId)).await()
+
+        TIM.logger?.log(DEBUG, TAG, "getKeyIdAndBiometricCipherEnableBiometricAccess: encryptionCipherResult: $encryptionCipherResult")
 
         val encryptionCipher = when (encryptionCipherResult) {
             is TIMResult.Failure -> return@async encryptionCipherResult
@@ -369,10 +378,7 @@ internal class TIMDataStorageInternal(
      * @param getInitialCipher the function that returns the required cipher, either for encryption or decryption
      * @return the cipher from the biometric prompt or a mapped TIMError
      */
-    private fun getBiometricCipher(scope: CoroutineScope, fragment: Fragment, getInitialCipher: () -> TIMResult<Cipher, TIMEncryptedStorageError>): Deferred<TIMResult<Cipher, TIMError>> = scope.async {
-        //Calls the provided getInitialCipher function, returns a cipher for either encryption or decryption
-        val initialCipherResult = getInitialCipher()
-
+    private fun getBiometricCipher(scope: CoroutineScope, fragment: Fragment, initialCipherResult: TIMResult<Cipher, TIMEncryptedStorageError>): Deferred<TIMResult<Cipher, TIMError>> = scope.async {
         val initialCipher = when (initialCipherResult) {
             is TIMResult.Failure -> return@async TIMError.Storage(TIMStorageError.EncryptedStorageFailed(initialCipherResult.error)).toTIMFailure()
             is TIMResult.Success -> initialCipherResult.value
