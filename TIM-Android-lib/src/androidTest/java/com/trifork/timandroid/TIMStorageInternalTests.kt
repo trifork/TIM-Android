@@ -1,5 +1,7 @@
 package com.trifork.timandroid
 
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.biometric.TIMBiometricData
@@ -15,9 +17,12 @@ import com.trifork.timencryptedstorage.helpers.test.TIMKeyServiceStub
 import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
 import com.trifork.timencryptedstorage.models.TIMResult
+import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
 import com.trifork.timencryptedstorage.models.keyservice.response.TIMKeyModel
 import com.trifork.timencryptedstorage.models.toTIMSuccess
+import com.trifork.timencryptedstorage.shared.BiometricCipherConstants
 import com.trifork.timencryptedstorage.shared.BiometricCipherHelper
+import com.trifork.timencryptedstorage.shared.SecretKeyHelper
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -25,6 +30,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
@@ -105,6 +112,13 @@ class TIMStorageInternalTests {
 
     @Test
     fun testEnableBiometricAccessForRefreshTokenViaLongSecret() = runBlocking {
+        mockkObject(SecretKeyHelper) // applies mocking to our SecretKeyHelper object
+
+        //Mocks creation of secret key
+        io.mockk.every {
+            SecretKeyHelper.getOrCreateSecretKey(any())
+        } returns createInsecureSecretKey()
+
         setupPresentBiometricPrompt()
         val storage = dataStorage()
         val keyModel = timKeyServiceStub.timKeyModel
@@ -218,8 +232,9 @@ class TIMStorageInternalTests {
 
     private fun setupPresentBiometricPrompt() {
         mockkObject(TIMBiometric) // applies mocking to our TIMBiometric helper object
-        val encryptionCipher = BiometricCipherHelper.getInitializedCipherForEncryption() as TIMResult.Success // The encryption cipher returned from the biometric prompt
-        val decryptionCipher = BiometricCipherHelper.getInitializedCipherForDecryption(encryptionCipher.value.iv) as TIMResult.Success // The decryption cipher returned from the biometric prompt
+        val biometricCipherHelper = BiometricCipherHelper(mockk())
+        val encryptionCipher = biometricCipherHelper.getInitializedCipherForEncryption("1") as TIMResult.Success // The encryption cipher returned from the biometric prompt
+        val decryptionCipher = biometricCipherHelper.getInitializedCipherForDecryption("1", encryptionCipher.value.iv) as TIMResult.Success // The decryption cipher returned from the biometric prompt
 
         coEvery {
             TIMBiometric.presentBiometricPrompt(any(), any(), any(), any()).await()
@@ -267,9 +282,27 @@ class TIMStorageInternalTests {
         }
     }
 
-    private fun JWTHelper(jwtString: JWTString) : JWT {
+    private fun JWTHelper(jwtString: JWTString): JWT {
         val jwtResult = JWT.newInstance(jwtString) as TIMResult.Success
         return jwtResult.value
+    }
+
+    //Generate an insecure secret key for testing purposes
+    private fun createInsecureSecretKey(): TIMResult<SecretKey, TIMEncryptedStorageError> {
+        return generateSecretKey(
+            KeyGenParameterSpec.Builder("SecretKeyHelper.getKeyAlias(keyId)", KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(BiometricCipherConstants.cipherBlockMode)
+                .setEncryptionPaddings(BiometricCipherConstants.cipherPadding)
+                .build()
+        ).toTIMSuccess()
+    }
+
+    private fun generateSecretKey(keyGenParameterSpec: KeyGenParameterSpec): SecretKey {
+        val keyGenerator = KeyGenerator.getInstance(
+            BiometricCipherConstants.cipherAlgorithm, "AndroidKeyStore"
+        )
+        keyGenerator.init(keyGenParameterSpec)
+        return keyGenerator.generateKey()
     }
 
     //endregion

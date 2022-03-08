@@ -1,5 +1,6 @@
 package com.trifork.timandroid.models.errors
 
+import androidx.biometric.BiometricPrompt
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
 import com.trifork.timencryptedstorage.models.errors.TIMKeyServiceError
@@ -89,13 +90,13 @@ sealed class TIMStorageError : TIMError() {
 
     /**
      * Determines whether this error means that fingerprints were added or completely removed
-     * In which case we would need the user to authenticate again
+     * In which case we would need the user to authenticate again and re-enable biometric authentication
      */
-    fun isBiometricAuthenticationInvalidated() : Boolean =
+    fun isBiometricAuthenticationInvalidated(): Boolean =
         when (this) {
             is EncryptedStorageFailed -> {
                 when (this.timEncryptedStorageError) {
-                    is TIMEncryptedStorageError.InvalidEncryptionKey -> true
+                    is TIMEncryptedStorageError.PermanentlyInvalidatedKey -> true
                     else -> false
                 }
             }
@@ -105,12 +106,30 @@ sealed class TIMStorageError : TIMError() {
         }
 
     /**
-     *   Determines whether this error is an error thrown by the KeyService.
+     * Determines whether this is an biometric authentication unrecoverable error
+     * This state should not be common for any application but was achieved on a single device using a beta version of android 12.
+     * Please report findings of this error.
+     */
+    fun isBiometricAuthenticationUnrecoverable(): Boolean =
+        when (this) {
+            is EncryptedStorageFailed -> {
+                when (this.timEncryptedStorageError) {
+                    is TIMEncryptedStorageError.UnrecoverablyFailedToEncrypt -> true
+                    is TIMEncryptedStorageError.UnrecoverablyFailedToDecrypt -> true
+                    else -> false
+                }
+            }
+            else -> {
+                false
+            }
+        }
+
+    /**
+     * Determines whether this error is an error thrown by the KeyService.
      *
-     *   This might be useful for handling unexpected cases from the encryption part of the framework.
-     *   When the key service fails you don't want to do any drastic fallback, since the server might "just" be down or the user have no internet connection. You will be able to recover later on, from a key service error.
+     * This might be useful for handling unexpected cases from the encryption part of the framework.
+     * When the key service fails you don't want to do any drastic fallback, since the server might "just" be down or the user have no internet connection. You will be able to recover later on, from a key service error.
      **/
-    //TODO Do we actually need this? Or can we let others call isKeyServiceError below directly?
     fun isKeyServiceError(): Boolean = isKeyServiceErrorInternal()
 
     /**
@@ -138,6 +157,10 @@ sealed class TIMStorageError : TIMError() {
         }
 
     //TODO Is this correct? (BiometricAuthenticationError is not present in iOS sdk) - JHE 21.12.21
+    /**
+     * Determines whether the thrown error is caused by the biometric authentication failing.
+     * Biometric authentication has failed if the child exception is either a [BiometricAuthenticationError] or a [TIMEncryptedStorageError.SecureStorageFailed] error.
+     */
     fun isBiometricFailedError(): Boolean =
         when (this) {
             is BiometricAuthenticationError -> true
@@ -151,9 +174,13 @@ sealed class TIMStorageError : TIMError() {
         }
 
     //TODO Added this, should it be on Auth error like iOS .isSafariViewControllerCancelled error?
+    /**
+     * Determines whether the thrown error is a biometric canceled error, is either thrown by the user actively canceling the biometric authentication prompt or the android system closing it when the application is send to the background
+     * In that case: Ignore the error.
+     */
     fun isBiometricCanceledError(): Boolean =
         when (this) {
-            is BiometricAuthenticationError -> this.errorCode == 13
+            is BiometricAuthenticationError -> this.errorCode == BiometricPrompt.ERROR_CANCELED || this.errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON || this.errorCode == BiometricPrompt.ERROR_USER_CANCELED
             else -> false
         }
 
