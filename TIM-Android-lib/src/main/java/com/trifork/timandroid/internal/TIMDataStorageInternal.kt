@@ -224,7 +224,6 @@ internal class TIMDataStorageInternal(
 
         TIM.logger?.log(DEBUG, TAG, "Got decryption cipher: $decryptionCipherResult")
 
-        //TODO JHE REVIEW?
         val decryptionCipher = when (decryptionCipherResult) {
             is TIMResult.Failure -> return@async decryptionCipherResult.error.toTIMFailure()
             is TIMResult.Success -> decryptionCipherResult.value
@@ -316,13 +315,10 @@ internal class TIMDataStorageInternal(
     }
 
     //endregion
-    //TODO Shouldn't we clear the long secret here?
     override fun clear(userId: String) {
         TIMDataStorageKey.getUserSpecificCases(userId).forEach {
             encryptedStorage.remove(it.storageKey)
         }
-
-        //encryptedStorage.removeLongSecret(userId)
 
         removeAvailableUserId(userId)
     }

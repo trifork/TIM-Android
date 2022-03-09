@@ -5,7 +5,6 @@ import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.biometric.TIMBiometricData
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.helpers.JWTString
-import com.trifork.timandroid.helpers.TIMEncryptedStorageLoggerInternal
 import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timandroid.models.errors.TIMStorageError
@@ -21,17 +20,46 @@ import com.trifork.timencryptedstorage.models.toTIMSuccess
 import com.trifork.timencryptedstorage.shared.BiometricCipherHelper
 import com.trifork.timencryptedstorage.shared.SecretKeyHelper
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
 
+    private val loggerStub = mockk<com.trifork.timencryptedstorage.helpers.test.TIMEncryptedStorageLoggerInternal> {
+        every { log(any(), any(), any(), any()) } returns Unit
+    }
+
     private val testRefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.fzHyQ0D6kSOr-6i4gEiJoOm5UutfqgivtqtXbwaRv1c")
+
+    @Before
+    fun init() {
+        //Applies mocking to our SecretKeyHelper object
+        mockkObject(SecretKeyHelper)
+
+        //Mocks creation of secret key
+        every {
+            SecretKeyHelper.getOrCreateSecretKey(any())
+        } returns SecretKeyHelperStub.createInsecureSecretKey()
+
+        //Setup Present Biometric Prompt
+        //Applies mocking to our TIMBiometric helper object
+        mockkObject(TIMBiometric)
+        val biometricCipherHelper = BiometricCipherHelper(loggerStub)
+
+        val encryptionCipher = biometricCipherHelper.getInitializedCipherForEncryption("1") as TIMResult.Success // The encryption cipher returned from the biometric prompt
+        val decryptionCipher = biometricCipherHelper.getInitializedCipherForDecryption("1", encryptionCipher.value.iv) as TIMResult.Success // The decryption cipher returned from the biometric prompt
+
+        coEvery {
+            TIMBiometric.presentBiometricPrompt(any(), any(), any(), any()).await()
+        } returns encryptionCipher.value.toTIMSuccess() andThen decryptionCipher.value.toTIMSuccess()
+    }
 
     @Test
     fun testStoreRefreshTokenWithNewPassword() = runBlocking {
@@ -40,7 +68,6 @@ class TIMStorageInternalTests {
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
         assertTrue(storage.hasRefreshToken(testRefreshToken.userId))
     }
-
 
     @Test
     fun testStoreRefreshTokenWithExistingPassword() = runBlocking {
@@ -76,7 +103,6 @@ class TIMStorageInternalTests {
 
     @Test
     fun testBiometricAccessForRefreshToken() = runBlocking {
-        setupPresentBiometricPrompt()
         val storage = dataStorage()
         val keyModel = timKeyServiceStub.timKeyModel
         // Store refresh token with new password
@@ -107,14 +133,6 @@ class TIMStorageInternalTests {
 
     @Test
     fun testEnableBiometricAccessForRefreshTokenViaLongSecret() = runBlocking {
-        mockkObject(SecretKeyHelper) // applies mocking to our SecretKeyHelper object
-
-        //Mocks creation of secret key
-        io.mockk.every {
-            SecretKeyHelper.getOrCreateSecretKey(any())
-        } returns SecretKeyHelperStub.createInsecureSecretKey()
-
-        setupPresentBiometricPrompt()
         val storage = dataStorage()
         val keyModel = timKeyServiceStub.timKeyModel
 
@@ -142,7 +160,6 @@ class TIMStorageInternalTests {
 
     @Test
     fun testClear() = runBlocking {
-        setupPresentBiometricPrompt()
         val storage = dataStorage()
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
 
@@ -163,7 +180,6 @@ class TIMStorageInternalTests {
 
     @Test
     fun testMultipleUsers() = runBlocking {
-        setupPresentBiometricPrompt()
         val user1RefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.El5bSmm8IPR4M11wg6mMCwnlx2hP7x4XZiaORoTWafY")
         val user1Password = "1234"
         val user2RefreshToken = JWTHelper("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjk1MTYyMzkwMjJ9.q0FBllJKYNGIDEsHj8d0yIGLCaANkyjxER_l1Xm4P50")
@@ -205,6 +221,7 @@ class TIMStorageInternalTests {
         storage.clear(user2RefreshToken.userId)
         assertEquals(1, storage.availableUserIds.size)
         assertFalse(storage.hasRefreshToken(user2RefreshToken.userId))
+        assertFalse(storage.hasBiometricAccessForRefreshToken(user2RefreshToken.userId))
         assertTrue(storage.hasRefreshToken(user1RefreshToken.userId))
         assertTrue(storage.hasBiometricAccessForRefreshToken(user1RefreshToken.userId))
     }
@@ -218,23 +235,12 @@ class TIMStorageInternalTests {
         TIMDataStorageInternal(
             TIMEncryptedStorage(
                 timSecureStorageMock,
-                TIMEncryptedStorageLoggerInternal(),
+                loggerStub,
                 timKeyServiceStub,
                 encryptionMethod
             ),
             TIMBiometricData.Builder().build()
         )
-
-    private fun setupPresentBiometricPrompt() {
-        mockkObject(TIMBiometric) // applies mocking to our TIMBiometric helper object
-        val biometricCipherHelper = BiometricCipherHelper(mockk())
-        val encryptionCipher = biometricCipherHelper.getInitializedCipherForEncryption("1") as TIMResult.Success // The encryption cipher returned from the biometric prompt
-        val decryptionCipher = biometricCipherHelper.getInitializedCipherForDecryption("1", encryptionCipher.value.iv) as TIMResult.Success // The decryption cipher returned from the biometric prompt
-
-        coEvery {
-            TIMBiometric.presentBiometricPrompt(any(), any(), any(), any()).await()
-        } returns encryptionCipher.value.toTIMSuccess() andThen decryptionCipher.value.toTIMSuccess()
-    }
 
     private fun setupKeyServiceSupportingMultipleUsers(): TIMKeyService {
         val timKeyModelOne = TIMKeyModel(
