@@ -316,7 +316,7 @@ internal class TIMDataStorageInternal(
     }
 
     //endregion
-    //TODO Should't we clear the
+    //TODO Shouldn't we clear the long secret here?
     override fun clear(userId: String) {
         TIMDataStorageKey.getUserSpecificCases(userId).forEach {
             encryptedStorage.remove(it.storageKey)

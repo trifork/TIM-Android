@@ -1,7 +1,5 @@
 package com.trifork.timandroid
 
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.trifork.timandroid.biometric.TIMBiometric
 import com.trifork.timandroid.biometric.TIMBiometricData
@@ -12,15 +10,14 @@ import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timandroid.models.errors.TIMStorageError
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
+import com.trifork.timencryptedstorage.helpers.test.SecretKeyHelperStub
 import com.trifork.timencryptedstorage.helpers.test.SecureStorageMock
 import com.trifork.timencryptedstorage.helpers.test.TIMKeyServiceStub
 import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
 import com.trifork.timencryptedstorage.models.TIMResult
-import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
 import com.trifork.timencryptedstorage.models.keyservice.response.TIMKeyModel
 import com.trifork.timencryptedstorage.models.toTIMSuccess
-import com.trifork.timencryptedstorage.shared.BiometricCipherConstants
 import com.trifork.timencryptedstorage.shared.BiometricCipherHelper
 import com.trifork.timencryptedstorage.shared.SecretKeyHelper
 import io.mockk.coEvery
@@ -30,8 +27,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
 
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
@@ -117,7 +112,7 @@ class TIMStorageInternalTests {
         //Mocks creation of secret key
         io.mockk.every {
             SecretKeyHelper.getOrCreateSecretKey(any())
-        } returns createInsecureSecretKey()
+        } returns SecretKeyHelperStub.createInsecureSecretKey()
 
         setupPresentBiometricPrompt()
         val storage = dataStorage()
@@ -285,24 +280,6 @@ class TIMStorageInternalTests {
     private fun JWTHelper(jwtString: JWTString): JWT {
         val jwtResult = JWT.newInstance(jwtString) as TIMResult.Success
         return jwtResult.value
-    }
-
-    //Generate an insecure secret key for testing purposes
-    private fun createInsecureSecretKey(): TIMResult<SecretKey, TIMEncryptedStorageError> {
-        return generateSecretKey(
-            KeyGenParameterSpec.Builder("SecretKeyHelper.getKeyAlias(keyId)", KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(BiometricCipherConstants.cipherBlockMode)
-                .setEncryptionPaddings(BiometricCipherConstants.cipherPadding)
-                .build()
-        ).toTIMSuccess()
-    }
-
-    private fun generateSecretKey(keyGenParameterSpec: KeyGenParameterSpec): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(
-            BiometricCipherConstants.cipherAlgorithm, "AndroidKeyStore"
-        )
-        keyGenerator.init(keyGenParameterSpec)
-        return keyGenerator.generateKey()
     }
 
     //endregion
