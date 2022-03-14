@@ -85,8 +85,7 @@ object TIM {
     /**
      * Configures [TIM] properties with the provided custom implementations
      * **THIS IS NOT THE USUAL WAY TO CONFIGURE TIM**
-     * This can be useful when mocking for testing or other scenarios where custom implementation
-     *
+     * This can be useful when mocking for testing or other scenarios where custom implementation is necessary
      * @param dataStorage implementation of [TIMDataStorage]
      * @param auth implementation of [TIMAuth]
      */
