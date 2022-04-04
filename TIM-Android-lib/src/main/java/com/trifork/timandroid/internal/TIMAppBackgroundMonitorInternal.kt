@@ -52,7 +52,6 @@ class TIMAppBackgroundMonitorInternal : TIMAppBackgroundMonitor, ApplicationLife
 
     //region Private helpers
     private fun removeObserver() {
-        this.durationSeconds = 18000
         this.handleTimeout = null
         ProcessLifecycleOwner.get().lifecycle.removeObserver(this)
     }

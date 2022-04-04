@@ -22,7 +22,7 @@ interface OpenIDConnectController {
      * Creates an intent for signing in to the Open ID Connect service
      * @return The intent to use for [Activity.startActivityForResult]
      */
-    fun getLoginIntent(scope: CoroutineScope): Deferred<TIMResult<Intent, TIMAuthError>>
+    fun getLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String? = null): Deferred<TIMResult<Intent, TIMAuthError>>
 
     /**
      * Handles result originating from the Intent from [getLoginIntent] and attempts to register for a valid user session

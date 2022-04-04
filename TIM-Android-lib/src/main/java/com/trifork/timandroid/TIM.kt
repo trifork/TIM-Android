@@ -52,7 +52,7 @@ object TIM {
      * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
      * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricUtil: TIMBiometricData = TIMBiometricData.Builder().build(), allowReconfigure: Boolean = false) {
+    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricData: TIMBiometricData = TIMBiometricData.Builder().build(), allowReconfigure: Boolean = false) {
 
         if (!allowReconfigure && (_storage != null || _auth != null)) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
@@ -71,7 +71,7 @@ object TIM {
 
         val storage = TIMDataStorageInternal(
             encryptedStorage,
-            timBiometricUtil
+            timBiometricData
         )
         _auth = TIMAuthInternal(
             storage,

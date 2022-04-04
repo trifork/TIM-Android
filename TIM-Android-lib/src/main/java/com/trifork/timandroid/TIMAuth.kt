@@ -27,6 +27,14 @@ interface TIMAuth {
     fun logout()
 
     /**
+     * A blocking version of the [accessToken] function which is useful when adding the accessToken to the headers of a request
+     * Gets the current access token from the current session if available
+     * This will automatically renew the access token if necessary and if the current refresh token is valid
+     *
+     */
+    fun accessTokenBlocking(): TIMResult<JWT, TIMError>
+
+    /**
      * Gets the current access token from the current session if available
      * This will automatically renew the access token if necessary and if the current refresh token is valid
      */
@@ -35,8 +43,9 @@ interface TIMAuth {
     /**
      * Get a intent for performing a OAuth login with OpenID Connect.
      * Parse the returned intent to a [ActivityResultLauncher] in order to present the OAuth login view.
+     * @param authorizationRequestNonce a optional nonce for identifying the login request by knowing which nonce should be present in the resulting JWT. **Use with caution** should always be a randomly generated value.
      */
-    fun getOpenIDConnectLoginIntent(scope: CoroutineScope): Deferred<TIMResult<Intent, TIMAuthError>>
+    fun getOpenIDConnectLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String? = null): Deferred<TIMResult<Intent, TIMAuthError>>
 
     /**
      * Handles the data received from ChromeCustomTabs. The data can is the returned data in [ActivityResult] as a result of using a [ActivityResultLauncher]

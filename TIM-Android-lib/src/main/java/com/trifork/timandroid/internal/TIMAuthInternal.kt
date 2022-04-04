@@ -15,6 +15,7 @@ import com.trifork.timencryptedstorage.models.toTIMSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 
 internal class TIMAuthInternal(
     private val storage: TIMDataStorage,
@@ -34,11 +35,15 @@ internal class TIMAuthInternal(
     ): Deferred<TIMResult<Unit, TIMAuthError>> =
         openIdController.handleLoginIntentResult(scope, dataIntent)
 
+    override fun accessTokenBlocking(): TIMResult<JWT, TIMError> = runBlocking {
+        return@runBlocking accessToken(this).await()
+    }
+
     override fun accessToken(scope: CoroutineScope): Deferred<TIMResult<JWT, TIMError>> =
         openIdController.accessToken(scope, false)
 
-    override fun getOpenIDConnectLoginIntent(scope: CoroutineScope): Deferred<TIMResult<Intent, TIMAuthError>> =
-        openIdController.getLoginIntent(scope)
+    override fun getOpenIDConnectLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String?): Deferred<TIMResult<Intent, TIMAuthError>> =
+        openIdController.getLoginIntent(scope, authorizationRequestNonce)
 
     override fun loginWithPassword(
         scope: CoroutineScope,
@@ -106,7 +111,7 @@ internal class TIMAuthInternal(
 
     override fun enableBackgroundTimeout(durationSeconds: Long, timeoutHandler: () -> Unit) {
         backgroundMonitor.enable(durationSeconds) {
-            if(this.isLoggedIn()) {
+            if (this.isLoggedIn()) {
                 this.logout()
                 timeoutHandler()
             }

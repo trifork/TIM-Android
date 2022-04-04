@@ -31,12 +31,12 @@ class AppAuthController(
 
     override fun isLoggedIn(): Boolean = authState != null
 
-    override fun getLoginIntent(scope: CoroutineScope): Deferred<TIMResult<Intent, TIMAuthError>> =
+    override fun getLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String?): Deferred<TIMResult<Intent, TIMAuthError>> =
         scope.async {
             val serviceConfigResult = discoverConfiguration(scope).await()
             when (serviceConfigResult) {
                 is TIMResult.Success -> {
-                    val authRequest = buildAuthRequest(serviceConfigResult.value)
+                    val authRequest = buildAuthRequest(serviceConfigResult.value, authorizationRequestNonce)
                     try {
                         authorizationService.getAuthorizationRequestIntent(authRequest)
                             .toTIMSuccess()
@@ -167,9 +167,9 @@ class AppAuthController(
     }
 
     /**
-     *
+     * Builds a AuthorizationRequest, adds the authorizationRequestNonce in case it is not null
      */
-    private fun buildAuthRequest(authServiceConfig: AuthorizationServiceConfiguration): AuthorizationRequest =
+    private fun buildAuthRequest(authServiceConfig: AuthorizationServiceConfiguration, authorizationRequestNonce: String? = null): AuthorizationRequest =
         AuthorizationRequest.Builder(
             authServiceConfig,
             config.clientId,
@@ -177,6 +177,10 @@ class AppAuthController(
             config.redirectUri
         )
             .setScopes(config.scopes)
+            .let {
+                if(authorizationRequestNonce != null) it.setNonce(authorizationRequestNonce)
+                it
+            }
             .build()
 
 
