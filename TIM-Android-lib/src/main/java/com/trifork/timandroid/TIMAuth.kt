@@ -1,7 +1,7 @@
 package com.trifork.timandroid
 
 import android.content.Intent
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
@@ -68,9 +68,9 @@ interface TIMAuth {
      * @param scope the coroutine scope. E.g. a view model scope
      * @param userId the userId of the user (can be found in the access token or refresh token)
      * @param storeNewRefreshToken [true] if it should store the new refresh token, and [false] if not. Most people will need this as [true]
-     * @param fragment for showing biometric authentication prompt
+     * @param fragmentActivity for showing biometric authentication prompt
      */
-    fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean = true, fragment: Fragment): Deferred<TIMResult<JWT, TIMError>>
+    fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean = true, fragmentActivity: FragmentActivity): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * Enables timeout feature for when the app is in the background. The timeout will clear all current user session data within [TIM]

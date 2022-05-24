@@ -10,7 +10,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.TIM
 import com.trifork.timandroid.models.errors.TIMStorageError
 import javax.crypto.Cipher
@@ -52,7 +52,7 @@ class TIMBiometricData private constructor(
     }
 
     fun showBiometricPrompt(
-        fragment: Fragment,
+        fragmentActivity: FragmentActivity,
         listener: BiometricAuthListener,
         cipher: Cipher
     ) {
@@ -62,7 +62,7 @@ class TIMBiometricData private constructor(
             description,
             negativeButtonText,
             confirmationRequired,
-            fragment,
+            fragmentActivity,
             listener,
             cipher
         )
@@ -90,7 +90,7 @@ internal object BiometricUtil {
         description: String,
         negativeButtonText: String,
         confirmationRequired: Boolean,
-        fragment: Fragment,
+        fragmentActivity: FragmentActivity,
         listener: BiometricAuthListener,
         cipher: Cipher,
     ) {
@@ -106,7 +106,7 @@ internal object BiometricUtil {
         TIM.logger?.log(DEBUG, TAG, "Created BiometricPromptInfo")
 
         // Attach with caller and callback handler
-        val biometricPrompt = initBiometricPrompt(fragment, listener)
+        val biometricPrompt = initBiometricPrompt(fragmentActivity, listener)
 
         // Authenticate with a CryptoObject
         biometricPrompt.apply {
@@ -145,18 +145,19 @@ internal object BiometricUtil {
     //endregion
 
     //region BiometricPrompt helpers
+
     /**
      * Initialize the biometric prompt with parsed [Fragment] and [BiometricAuthListener]
-     * @param fragment [Fragment] the view used to show the custom tab
+     * @param fragmentActivity [FragmentActivity] the activity used to show the custom tab
      * @param listener [BiometricAuthListener] the callback style interface with results from the showed custom tab
      * @return [BiometricPrompt] the initialized prompt that can be presented to the user
      */
     private fun initBiometricPrompt(
-        fragment: Fragment,
+        activity: FragmentActivity,
         listener: BiometricAuthListener
     ): BiometricPrompt {
         // Attach calling Activity
-        val executor = ContextCompat.getMainExecutor(fragment.context)
+        val executor = ContextCompat.getMainExecutor(activity)
 
         // Attach callback handlers
         val callback = object : BiometricPrompt.AuthenticationCallback() {
@@ -177,8 +178,7 @@ internal object BiometricUtil {
                 listener.onBiometricAuthenticationSuccess(result)
             }
         }
-
-        return BiometricPrompt(fragment, executor, callback)
+        return BiometricPrompt(activity, executor, callback)
     }
 
     /**

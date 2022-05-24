@@ -3,7 +3,7 @@ package com.trifork.timandroid.biometric
 import android.util.Log.DEBUG
 import android.util.Log.ERROR
 import androidx.biometric.BiometricPrompt
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.TIM
 import com.trifork.timandroid.models.errors.TIMStorageError
 import com.trifork.timencryptedstorage.models.TIMResult
@@ -20,10 +20,10 @@ internal object TIMBiometric {
 
     private val TAG = "TIMBiometric"
 
-    fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricData, fragment: Fragment, cipher: Cipher): Deferred<TIMResult<Cipher, TIMStorageError>> = scope.async {
+    fun presentBiometricPrompt(scope: CoroutineScope, timBiometricUtil: TIMBiometricData, fragmentActivity: FragmentActivity, cipher: Cipher): Deferred<TIMResult<Cipher, TIMStorageError>> = scope.async {
         suspendCoroutine { continuation ->
             timBiometricUtil.showBiometricPrompt(
-                fragment = fragment,
+                fragmentActivity = fragmentActivity,
                 listener = object : BiometricAuthListener {
                     override fun onBiometricAuthenticationSuccess(result: BiometricPrompt.AuthenticationResult) {
                         TIM.logger?.log(DEBUG, TAG, "onBiometricAuthenticationSuccess")

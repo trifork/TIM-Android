@@ -1,7 +1,7 @@
 package com.trifork.timandroid.internal
 
 import android.content.Intent
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.TIMAppBackgroundMonitor
 import com.trifork.timandroid.TIMAuth
 import com.trifork.timandroid.TIMDataStorage
@@ -75,8 +75,8 @@ internal class TIMAuthInternal(
         }
     }
 
-    override fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean, fragment: Fragment): Deferred<TIMResult<JWT, TIMError>> = scope.async {
-        val enableResult = storage.getStoredRefreshTokenViaBiometric(scope, userId, fragment).await()
+    override fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean, fragmentActivity: FragmentActivity): Deferred<TIMResult<JWT, TIMError>> = scope.async {
+        val enableResult = storage.getStoredRefreshTokenViaBiometric(scope, userId, fragmentActivity).await()
 
         val biometricRefreshToken = when (enableResult) {
             is TIMResult.Failure -> return@async enableResult.error.toTIMFailure()
