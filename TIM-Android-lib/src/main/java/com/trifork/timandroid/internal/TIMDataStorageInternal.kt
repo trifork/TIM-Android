@@ -1,6 +1,7 @@
 package com.trifork.timandroid.internal
 
 import android.util.Log.DEBUG
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.TIM
 import com.trifork.timandroid.TIMDataStorage
@@ -193,6 +194,16 @@ internal class TIMDataStorageInternal(
     }
 
     /**
+     * Backwards compatibility
+     * @see getStoredRefreshTokenViaBiometric
+     */
+    override fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>> {
+        val fragmentActivity = fragment.activity
+        requireNotNull(fragmentActivity)
+        return getStoredRefreshTokenViaBiometric(scope, userId, fragmentActivity)
+    }
+
+    /**
      * Gets the stored refresh token using the encrypted storage and biometric prompt
      * @param scope the scope for the task
      * @param userId the user userId
@@ -253,6 +264,16 @@ internal class TIMDataStorageInternal(
     }
 
     /**
+     * Backwards compatibility
+     * @see enableBiometricAccessForRefreshToken
+     */
+    override fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>> {
+        val fragmentActivity = fragment.activity
+        requireNotNull(fragmentActivity)
+        return enableBiometricAccessForRefreshToken(scope, password, userId, fragmentActivity)
+    }
+
+    /**
      * Used to enable biometric access. Can be used to enable biometric access after the user has logged in and the password has been requested. Verifies the password against the keyserver and requests a longSecret for biometric encryption.
      * @param scope the scope for the task
      * @param password the password for the provided userId
@@ -264,6 +285,16 @@ internal class TIMDataStorageInternal(
         return getKeyIdAndBiometricCipherEnableBiometricAccess(scope, userId, fragmentActivity) { keyId, encryptionCipher ->
             encryptedStorage.enableBiometric(scope, keyId, password, encryptionCipher)
         }
+    }
+
+    /**
+     * Backwards compatibility
+     * @see enableBiometricAccessForRefreshTokenLongSecret
+     */
+    override fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>> {
+        val fragmentActivity = fragment.activity
+        requireNotNull(fragmentActivity)
+        return enableBiometricAccessForRefreshTokenLongSecret(scope, longSecret, userId, fragmentActivity)
     }
 
     /**
