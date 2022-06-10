@@ -36,17 +36,19 @@ class TIMConfiguration {
      * @param clientId Client id, e.g. "my-client-id"
      * @param redirectUri Redirect URI, e.g. "my-app:/"
      * @param scopes Scopes, e.g. [[OIDScopeOpenID], [OIDScopeProfile]]
+     * @param additionalParameters Additional parameters, e.g.
      * @param encryptionMethod Optional encryption method, [TIMESEncryptionMethod.AesGcm] is default and only supported
      * @param keyServiceVersion Optional key service version, defaults to [TIMKeyServiceVersion.V1]
      */
-    constructor(timBaseUrl: URL, realm: String, clientId: String, redirectUri: Uri, scopes: List<String>, encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1) {
+    constructor(timBaseUrl: URL, realm: String, clientId: String, redirectUri: Uri, scopes: List<String>, additionalParameters: Map<String, String> = mapOf(), encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1) {
         val fullTimUrl = Uri.parse("${timBaseUrl}/auth/realms/$realm")
 
         this.oidcConfig = TIMOpenIdConnectConfiguration(
             fullTimUrl,
             clientId,
             redirectUri,
-            scopes
+            scopes,
+            additionalParameters
         )
         //TODO(Get the realmBaseUrl from the fullTimUrl)
         this.keyServiceConfig = TIMKeyServiceConfiguration("${timBaseUrl}/auth/realms/$realm/", keyServiceVersion)
