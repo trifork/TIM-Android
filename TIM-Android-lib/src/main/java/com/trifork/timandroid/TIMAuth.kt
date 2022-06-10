@@ -1,7 +1,9 @@
 package com.trifork.timandroid
 
 import android.content.Intent
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
 import com.trifork.timandroid.models.errors.TIMError
@@ -62,6 +64,12 @@ interface TIMAuth {
      * @return A result containing the access token if login was successful or a result with an error indicating what went wrong
      */
     fun loginWithPassword(scope: CoroutineScope, userId: String, password: String, storeNewRefreshToken: Boolean): Deferred<TIMResult<JWT, TIMError>>
+
+    /**
+     * Backwards compatibility
+     * @see loginWithBiometricId
+     */
+    fun loginWithBiometricId(scope: CoroutineScope, userId: String, storeNewRefreshToken: Boolean = true, fragment: Fragment): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * Logs in using biometric login. This can only be done if the user has stored the refresh token with a password after calling `performOpenIDConnectLogin` AND enabled biometric protection for it.
