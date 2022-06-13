@@ -97,6 +97,7 @@ class AppAuthController(
             config.clientId
         )
             .setScopes(config.scopes)
+            .setAdditionalParameters(config.additionalParameters)
             .setGrantType(GrantTypeValues.REFRESH_TOKEN)
             .setRefreshToken(refreshToken.token)
             .build()
@@ -177,6 +178,7 @@ class AppAuthController(
             config.redirectUri
         )
             .setScopes(config.scopes)
+            .setAdditionalParameters(config.additionalParameters)
             .let {
                 if(authorizationRequestNonce != null) it.setNonce(authorizationRequestNonce)
                 it

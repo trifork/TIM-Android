@@ -54,9 +54,28 @@ TIM.configure(config)
 ### URL scheme
 
 You need to add the following appAuthRedirectScheme manifest placeholder to your app's gradle file using the same redirect url used in the TIMConfiguration above. 
-This will let your app catch the redirect from the chrome custom tabs when the user has finished the login:
+This will let your app catch the redirect from the chrome custom tabs when the user has finished the login.
+In order for your app to differentiate between build types, each buildType could define a specific `appIdSuffix` and `appAuthRedirectScheme`. 
+This will make it possible to have several apps with different build types installed and still hit the correct app after successful login.
+
 ````groovy
-android.defaultConfig.manifestPlaceholders = ['appAuthRedirectScheme': 'my-app://']
+buildTypes {
+    debug {
+        applicationIdSuffix ".debug"
+        manifestPlaceholders = [
+                appIdSuffix          : ".debug",
+                appAuthRedirectScheme: "dk.bankinvest.darwin.debug"
+        ]
+    }
+
+    release {
+        applicationIdSuffix ""
+        manifestPlaceholders = [
+                appIdSuffix          : "",
+                appAuthRedirectScheme: "dk.bankinvest.darwin"
+        ]
+    }
+}
 ````
 
 Furthermore the following needs to be added to your `AndroidManifest.xml` file, in order for the chrome custom tab to work
@@ -70,7 +89,7 @@ Furthermore the following needs to be added to your `AndroidManifest.xml` file, 
             <action android:name="android.intent.action.VIEW"/>
             <category android:name="android.intent.category.DEFAULT"/>
             <category android:name="android.intent.category.BROWSABLE"/>
-            <data android:scheme="${appAuthRedirectScheme}"/>
+            <data android:scheme="${appId}${appIdSuffix}"/>
         </intent-filter>
     </activity>
 ```
@@ -381,6 +400,129 @@ if(timStorageError.isBiometricCanceledError()) {
 
 Other errors should of course still be handled, but can be handled in a more generic way, since they might be caused by network issues, server updates, or other unpredictable cases.
 
+## Dynamic linking
+If you want to support dynamically linking the app to the mitid app the following steps have to be implemented. This will make it possible to app switch between your app and the MitId app in case the user has it installed on their device.
+Note that the server has to be setup correctly to support this, and accept additional parameters. Furthermore you need a server that can host a `assertlinks.json` file, making it possible for the MitId app to navigate the user back to your app.
+
+### 1. Add additional parameters to the TIM configuration
+In order for TIM to redirect correctly to the MitId app after the user has input their username the following additional parameters have to be added to the TIMConfiguration object.
+Be careful when defining your base url and callback path, making sure they are mapped correctly in the intent filter defined in step 5.
+
+```kotlin
+//Only add additional parameters if we actually have the app installed
+val additionalParams = if (MitIdApp.isInstalled()) {
+    hashMapOf(
+        Pair("app_switch_os", "android"),
+        Pair("enable_app_switch", "true"),
+        Pair("app_switch_url", "$YOUR_BASE_URL$YOU_CALLBACK_PATH")
+    )
+} else {
+    mapOf()
+}
+
+val config = TIMConfiguration(
+    URL("TIM base URL"),
+    "realm",
+    "clientId",
+    Uri.parse("my-app://"),
+    listOf(OIDScopeOpenID, OIDScopeProfile),
+    additionalParameters
+)
+
+TIM.configure(config)
+
+```
+
+### 2. Add a helper object to detect whether the user has the MitId app
+The MitIdApp object could be implemented as the following, here we ask the system if the user has the mitid app installed on the phone:
+```kotlin
+object MitIdApp {
+    private const val MIT_ID_APP_PACKAGE_NAME = "dk.mitid.app.android"
+
+    fun isSupported(): Boolean {
+        //If the app is installed, then it's supported. This is exactly how the MobilePay SDK does this check
+        return try {
+            App.getInstance().packageManager.getApplicationInfo(MIT_ID_APP_PACKAGE_NAME, 0)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+}
+```
+
+### 3. Add a query to the manifest file
+In order for the app to ask for a ApplicationInfo, the following has to be added to the `manifest.xml` file before your `Application` tag: 
+
+```xml
+    <!-- Needed to check if MitID is installed or not -->
+    <queries>
+        <package android:name="dk.mitid.app.android"/>
+    </queries>
+```
+
+### 4. Generate an assertlinks.json file
+A `assertlinks.json` also has to be generated and located at your selected redirect server in `.well-known/assetlinks.json` 
+
+Information about assert link files can be found here:
+https://developer.android.com/training/app-links/verify-site-associations
+
+An example of an `assertlinks.json` file:
+```json
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "YOUR_PACKAGE_NAME",
+      "sha256_cert_fingerprints": [
+        "YOUR_SHA_256_CERT_FINGERPRINT"
+      ]
+    }
+  }
+]
+
+```
+
+### 5. Implement a app link receiver activity and add a intent filter
+In order for your app to capture the app links from the MitId and continue the authentication flow in the open Custom Tab we define a 'dummy' receiving activity.
+This activity will capture the app link and close itself, our app will regain focus and continue from where we left of (our open Custom Tab).
+
+````kotlin
+class AppLinkReceiverActivity : FragmentActivity() {
+
+    //We catch the AppLink here, and finish the activity in order to 'Resume' the previously running activity that opened the CustomTab.
+    //The issue is that android "launches" a new instance of the receiver from the intent filter, thus we "cannot" just return to the current running app.
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        lifecycleScope.launchWhenResumed {
+            if (isTaskRoot) {
+                startActivity(Intent(this@AppLinkReceiverActivity, StartActivity::class.java))
+            }
+            finish()
+        }
+    }
+}
+````
+
+The intent following intent filter should be added to the activity definition in the `AndroidManifest.xml` file.
+The chosen base url and callback path has to be identical to the ones defined in your additional parameters object.
+
+````xml
+<activity android:name=".ui.AppLinkReceiverActivity" android:exported="true" >
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+    
+        <data android:scheme="https" />
+        <data android:host="$YOUR_BASE_URL" android:path="$YOU_CALLBACK_PATH" />
+    </intent-filter>
+</activity>
+````
+
 ## Architecture
 
 `TIM` depends on `AppAuth` and `TIMEncryptedStorage` and wraps their use for common use cases (see sections above), such that registering, login and encrypted storage is easy to manage.
@@ -421,6 +563,22 @@ Each project has a development build variant that makes it possible to build the
 When selecting the development build variant for the example project or TIM, gradle will use the projects located in the same root folder as the project itself as the source for TIM and TIMEncryptedStorage.
 
 Other build variants use the defined version from github. The debug build uses the github version in order for new developers to download the example project and just run it without needing extra work besides synchronizing and building the project.   
+
+
+#### Testing locally
+For testing changes to a local copy of the TIM library, add the following include in your `settings.gradle` file. (The TIM-Android folder is located in the same directory as the project files in this example)
+```groovy
+include ':TIM-Android'
+project(':TIM-Android').projectDir = new File('../TIM-Android/TIM-Android') //Your local copy of the TIM Library
+
+include ':TIMEncryptedStorage-Android'
+project(':TIMEncryptedStorage-Android').projectDir = new File('../TIMEncryptedStorage-Android/library') //Your local copy of the TIMEncryptedStorage Library
+```
+
+And use the following implementations statement in your `app/build.gradle` file under dependencies.
+```groovy
+implementation project(':TIM-Android')
+```
 
 ### Deployment
 TIM and TIMEncryptedStorage are both distributed using a simple jitpack setup. Each project has a publish.gradle file determining the publishing configuration.
