@@ -9,9 +9,9 @@ import com.trifork.timandroid.internal.TIMDataStorageInternal
 import com.trifork.timandroid.models.errors.TIMError
 import com.trifork.timandroid.models.errors.TIMStorageError
 import com.trifork.timencryptedstorage.TIMEncryptedStorage
-import com.trifork.timencryptedstorage.helpers.test.SecretKeyHelperStub
-import com.trifork.timencryptedstorage.helpers.test.SecureStorageMock
-import com.trifork.timencryptedstorage.helpers.test.TIMKeyServiceStub
+import com.trifork.timencryptedstorage.test.SecretKeyHelperStub
+import com.trifork.timencryptedstorage.test.SecureStorageMock
+import com.trifork.timencryptedstorage.test.TIMKeyServiceStub
 import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
 import com.trifork.timencryptedstorage.models.TIMResult
@@ -32,7 +32,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
 
-    private val loggerStub = mockk<com.trifork.timencryptedstorage.helpers.test.TIMEncryptedStorageLoggerInternal> {
+    private val loggerStub = mockk<com.trifork.timencryptedstorage.test.TIMEncryptedStorageLoggerInternal> {
         every { log(any(), any(), any(), any()) } returns Unit
     }
 
@@ -46,7 +46,7 @@ class TIMStorageInternalTests {
         //Mocks creation of secret key
         every {
             SecretKeyHelper.getOrCreateSecretKey(any())
-        } returns SecretKeyHelperStub.createInsecureSecretKey()
+        } returns com.trifork.timencryptedstorage.test.SecretKeyHelperStub.createInsecureSecretKey()
 
         //Setup Present Biometric Prompt
         //Applies mocking to our TIMBiometric helper object
@@ -228,10 +228,10 @@ class TIMStorageInternalTests {
 
     //region private helpers
 
-    private val timSecureStorageMock = SecureStorageMock()
-    private val timKeyServiceStub = TIMKeyServiceStub()
+    private val timSecureStorageMock = com.trifork.timencryptedstorage.test.SecureStorageMock()
+    private val timKeyServiceStub = com.trifork.timencryptedstorage.test.TIMKeyServiceStub()
 
-    private fun dataStorage(encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, timKeyServiceStub: TIMKeyService = TIMKeyServiceStub()): TIMDataStorageInternal =
+    private fun dataStorage(encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, timKeyServiceStub: TIMKeyService = com.trifork.timencryptedstorage.test.TIMKeyServiceStub()): TIMDataStorageInternal =
         TIMDataStorageInternal(
             TIMEncryptedStorage(
                 timSecureStorageMock,

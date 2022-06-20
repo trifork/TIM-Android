@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.trifork.timandroid.internal
 
 import androidx.lifecycle.DefaultLifecycleObserver
