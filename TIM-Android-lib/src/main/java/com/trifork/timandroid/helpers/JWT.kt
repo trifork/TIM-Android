@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.trifork.timandroid.helpers
 
 import android.util.Log
