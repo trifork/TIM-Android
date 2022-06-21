@@ -28,34 +28,47 @@ class JWT(
         fun newInstance(token: JWTString): TIMResult<JWT, TIMEncryptedStorageError.KeyServiceJWTDecodeFailed> {
             val jwtResult = JWTDecoder.decode(token)
             val jwt = when (jwtResult) {
-                is TIMResult.Failure -> return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(jwtResult.error).toTIMFailure()
+                is TIMResult.Failure -> return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(
+                    jwtResult.error
+                ).toTIMFailure()
                 is TIMResult.Success -> jwtResult.value
             }
 
             TIM.logger?.log(Log.DEBUG, TIMDataStorageInternal.TAG, "Decoded jwt token")
 
-            val userId = jwt.userId ?: return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(Throwable("No userId in jwt")).toTIMFailure()
+            val userId = jwt.userId ?: return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(
+                MissingUserIdException
+            ).toTIMFailure()
             val expire = jwt.expire?.toLong()
 
-            var zonedDateTime : String? = null
-            if(expire != null) {
-                try {
-                    zonedDateTime = Instant.ofEpochSecond(expire)
-                        .atZone(ZoneId.of("Z"))
-                        .format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-                }
-                catch (throwable: Throwable) {
-                    TIM.logger?.log(Log.ERROR, TIMDataStorageInternal.TAG, "Could not decode JWT expire date time")
-                }
-            }
+            val zonedDateTime: String? = expire?.let { parseZonedDateTimeOrLog(it) }
 
             return JWT(
-                token,
-                userId,
-                zonedDateTime,
-                jwt.issuer
+                token = token,
+                userId = userId,
+                expire = zonedDateTime,
+                issuer = jwt.issuer
             ).toTIMSuccess()
         }
+
+        private fun parseZonedDateTimeOrLog(expire: Long): String? {
+            try {
+                return Instant.ofEpochSecond(expire)
+                    .atZone(ZoneId.of("Z"))
+                    .format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+            } catch (throwable: Throwable) {
+                TIM.logger?.log(
+                    Log.ERROR,
+                    TIMDataStorageInternal.TAG,
+                    "Could not decode JWT expire date time"
+                )
+            }
+            return null
+        }
+
+        val MissingUserIdException = Throwable("No userId in jwt")
+
     }
+
 }
 

@@ -1,33 +1,23 @@
 package com.trifork.timandroid
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.trifork.timandroid.biometric.TIMBiometric
-import com.trifork.timandroid.biometric.TIMBiometricData
-import com.trifork.timandroid.helpers.JWT
-import com.trifork.timandroid.helpers.JWTString
-import com.trifork.timandroid.internal.TIMDataStorageInternal
-import com.trifork.timandroid.models.errors.TIMError
-import com.trifork.timandroid.models.errors.TIMStorageError
-import com.trifork.timencryptedstorage.TIMEncryptedStorage
-import com.trifork.timencryptedstorage.test.SecretKeyHelperStub
-import com.trifork.timencryptedstorage.test.SecureStorageMock
-import com.trifork.timencryptedstorage.test.TIMKeyServiceStub
-import com.trifork.timencryptedstorage.keyservice.TIMKeyService
-import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
-import com.trifork.timencryptedstorage.models.TIMResult
-import com.trifork.timencryptedstorage.models.keyservice.response.TIMKeyModel
-import com.trifork.timencryptedstorage.models.toTIMSuccess
-import com.trifork.timencryptedstorage.shared.BiometricCipherHelper
-import com.trifork.timencryptedstorage.shared.SecretKeyHelper
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
-import kotlinx.coroutines.runBlocking
+import androidx.fragment.app.*
+import androidx.test.ext.junit.runners.*
+import com.trifork.timandroid.biometric.*
+import com.trifork.timandroid.helpers.*
+import com.trifork.timandroid.internal.*
+import com.trifork.timandroid.models.errors.*
+import com.trifork.timandroid.test.*
+import com.trifork.timencryptedstorage.*
+import com.trifork.timencryptedstorage.keyservice.*
+import com.trifork.timencryptedstorage.models.*
+import com.trifork.timencryptedstorage.models.keyservice.response.*
+import com.trifork.timencryptedstorage.shared.*
+import com.trifork.timencryptedstorage.test.*
+import io.mockk.*
+import kotlinx.coroutines.*
+import org.junit.*
 import org.junit.Assert.*
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.runner.*
 
 @RunWith(AndroidJUnit4::class)
 class TIMStorageInternalTests {
@@ -46,7 +36,7 @@ class TIMStorageInternalTests {
         //Mocks creation of secret key
         every {
             SecretKeyHelper.getOrCreateSecretKey(any())
-        } returns com.trifork.timencryptedstorage.test.SecretKeyHelperStub.createInsecureSecretKey()
+        } returns SecretKeyHelperStub.createInsecureSecretKey()
 
         //Setup Present Biometric Prompt
         //Applies mocking to our TIMBiometric helper object
@@ -111,7 +101,7 @@ class TIMStorageInternalTests {
         // Enable biometric access
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
-        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk()).await()
+        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk<FragmentActivity>()).await()
         // We assert that biometric access was given successfully
         assertEquals(TIMResult.Success::class, result::class)
 
@@ -119,7 +109,7 @@ class TIMStorageInternalTests {
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
 
         // Get stored refresh token
-        val storedRefreshTokenResult = storage.getStoredRefreshTokenViaBiometric(this, testRefreshToken.userId, mockk()).await() as TIMResult.Success
+        val storedRefreshTokenResult = storage.getStoredRefreshTokenViaBiometric(this, testRefreshToken.userId, mockk<FragmentActivity>()).await() as TIMResult.Success
 
         // The token and long secret match the ones returned by the key server
         assertEquals(testRefreshToken.token, storedRefreshTokenResult.value.refreshToken.token)
@@ -140,7 +130,7 @@ class TIMStorageInternalTests {
         storage.storeRefreshTokenWithNewPassword(this, testRefreshToken, "1234").await()
         // Enable biometric access
         assertFalse(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
-        val result = storage.enableBiometricAccessForRefreshToken(this, keyModel.longSecret, testRefreshToken.userId, mockk()).await()
+        val result = storage.enableBiometricAccessForRefreshToken(this, keyModel.longSecret, testRefreshToken.userId, mockk<FragmentActivity>()).await()
 
         assertEquals(TIMResult.Success::class, result::class)
         assertTrue(storage.hasBiometricAccessForRefreshToken(testRefreshToken.userId))
@@ -165,7 +155,7 @@ class TIMStorageInternalTests {
 
         assertTrue(storage.hasRefreshToken(testRefreshToken.userId))
 
-        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk()).await()
+        val result = storage.enableBiometricAccessForRefreshToken(this, "1234", testRefreshToken.userId, mockk<FragmentActivity>()).await()
 
         assertEquals(TIMResult.Success::class, result::class)
 
@@ -198,16 +188,16 @@ class TIMStorageInternalTests {
         assertEquals(2, storage.availableUserIds.size)
 
         // Enable bio for user 1
-        storage.enableBiometricAccessForRefreshToken(this, user1Password, user1RefreshToken.userId, mockk()).await()
+        storage.enableBiometricAccessForRefreshToken(this, user1Password, user1RefreshToken.userId, mockk<FragmentActivity>()).await()
         assertTrue(storage.hasBiometricAccessForRefreshToken(user1RefreshToken.userId))
         assertFalse(storage.hasBiometricAccessForRefreshToken(user2RefreshToken.userId))
 
         // Get refresh token via bio for user 1
-        val bioResult1 = storage.getStoredRefreshTokenViaBiometric(this, user1RefreshToken.userId, mockk()).await() as TIMResult.Success
+        val bioResult1 = storage.getStoredRefreshTokenViaBiometric(this, user1RefreshToken.userId, mockk<FragmentActivity>()).await() as TIMResult.Success<BiometricRefreshToken>
         assertEquals(user1RefreshToken.token, bioResult1.value.refreshToken.token)
 
         // Get refresh token via bio for user 2 -> This should fail!
-        val bioResult2 = storage.getStoredRefreshTokenViaBiometric(this, user2RefreshToken.userId, mockk()).await() as TIMResult.Failure
+        val bioResult2 = storage.getStoredRefreshTokenViaBiometric(this, user2RefreshToken.userId, mockk<FragmentActivity>()).await() as TIMResult.Failure<*>
 
         val error = bioResult2.error as TIMError.Storage
 

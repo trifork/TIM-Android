@@ -20,14 +20,12 @@ import com.trifork.timencryptedstorage.TIMEncryptedStorage
 import com.trifork.timencryptedstorage.keyservice.TIMKeyServiceImpl
 import com.trifork.timencryptedstorage.securestorage.TIMEncryptedSharedPreferences
 
-// TODO: In the README.md it should contain a section about the weird quirk between redirectUri in BuildConfig and in Manifest ("app:/" vs "app") - MFJ (20/09/2021)
-object TIM {
-
+open class TIMImpl {
     private var _storage: TIMDataStorage? = null
     val storage: TIMDataStorage
         @Throws(RuntimeException::class)
-        get() =
-            _storage ?: throw RuntimeException("Accessing TIM.storage before calling TIM.configure(...) is not allowed!")
+        get() = _storage
+            ?: throw RuntimeException("Accessing TIM.storage before calling TIM.configure(...) is not allowed!")
 
     private var _auth: TIMAuth? = null
     val auth: TIMAuth
@@ -52,34 +50,40 @@ object TIM {
      * @param allowReconfigure Controls whether you are allowed to call this methods multiple times. It is **dangerours**, but possible if really needed. Default value is false
      * */
     @Throws(RuntimeException::class)
-    fun configure(config: TIMConfiguration, customLogger: TIMLogger? = TIMLoggerInternal(), context: Context, timBiometricData: TIMBiometricData = TIMBiometricData.Builder().build(), allowReconfigure: Boolean = false) {
+    fun configure(
+        config: TIMConfiguration,
+        customLogger: TIMLogger? = TIMLoggerInternal(),
+        context: Context,
+        timBiometricData: TIMBiometricData = TIMBiometricData.Builder().build(),
+        allowReconfigure: Boolean = false
+    ) {
 
-        if (!allowReconfigure && (_storage != null || _auth != null)) {
+        if (!allowReconfigure && isConfigured) {
             throw RuntimeException("⛔️ You shouldn't configure TIM more than once!")
         }
-
-        _logger = customLogger
 
         val applicationContext = context.applicationContext
 
         val encryptedStorage = TIMEncryptedStorage(
-            TIMEncryptedSharedPreferences(applicationContext),
-            TIMEncryptedStorageLoggerInternal(),
-            TIMKeyServiceImpl.getInstance(config.keyServiceConfig),
-            config.encryptionMethod,
+            secureStorage = TIMEncryptedSharedPreferences(applicationContext),
+            logger = TIMEncryptedStorageLoggerInternal(),
+            keyService = TIMKeyServiceImpl.getInstance(config.keyServiceConfig),
+            encryptionMethod = config.encryptionMethod,
         )
 
         val storage = TIMDataStorageInternal(
-            encryptedStorage,
-            timBiometricData
-        )
-        _auth = TIMAuthInternal(
-            storage,
-            AppAuthController(config.oidcConfig, applicationContext),
-            TIMAppBackgroundMonitorInternal()
+            encryptedStorage = encryptedStorage,
+            timBiometricUtil = timBiometricData
         )
 
-        _storage = storage
+
+        val auth = TIMAuthInternal(
+            storage = storage,
+            openIdController = AppAuthController(config.oidcConfig, applicationContext),
+            backgroundMonitor = TIMAppBackgroundMonitorInternal()
+        )
+
+        configure(storage, auth, customLogger)
     }
 
     /**
@@ -89,7 +93,11 @@ object TIM {
      * @param dataStorage implementation of [TIMDataStorage]
      * @param auth implementation of [TIMAuth]
      */
-    fun configure(dataStorage: TIMDataStorage, auth: TIMAuth, customLogger: TIMLogger? = TIMLoggerInternal()) {
+    fun configure(
+        dataStorage: TIMDataStorage,
+        auth: TIMAuth,
+        customLogger: TIMLogger? = TIMLoggerInternal()
+    ) {
         _storage = dataStorage
         _auth = auth
         _logger = customLogger
@@ -126,3 +134,6 @@ object TIM {
 
     //endregion
 }
+
+// TODO: In the README.md it should contain a section about the weird quirk between redirectUri in BuildConfig and in Manifest ("app:/" vs "app") - MFJ (20/09/2021)
+object TIM : TIMImpl()
