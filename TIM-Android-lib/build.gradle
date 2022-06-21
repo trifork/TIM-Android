@@ -8,16 +8,15 @@ plugins {
 apply from: '../dependencies.gradle'
 
 android {
-    compileSdk 31
+    compileSdk 32
 
-    testBuildType "development"
 
     defaultConfig {
         // The minSdk should never be lower than 23, as it relies on the keystore to be properly working.
         // See https://developer.android.com/jetpack/androidx/releases/security#security-crypto-1.1.0-alpha01
         // and https://developer.android.com/training/articles/keystore#SupportedCiphers
         minSdk 26
-        targetSdk 30
+        targetSdk 32
         versionCode 1
         versionName "1.0.0"
 
@@ -46,11 +45,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    testOptions {
-        unitTests.all {
-            useJUnitPlatform()
-        }
-    }
 }
 
 dependencies {
@@ -68,6 +62,7 @@ dependencies {
 
     //region Testing
     testImplementation jUnit.junit
+    testImplementation roboleltric.roboleltric
 
     androidTestImplementation mockk.android
     androidTestImplementation androidX.test.androidJUnit

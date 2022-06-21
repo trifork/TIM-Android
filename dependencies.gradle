@@ -74,6 +74,11 @@ ext {
     ]
     //endregion
 
+    roboleltric_version = "4.8.1"
+    roboleltric = [
+            roboleltric: "org.robolectric:robolectric:$roboleltric_version"
+    ]
+
     //region Lifecycle
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
     androidx_lifecycle_version = "2.4.1"
