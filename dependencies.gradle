@@ -35,7 +35,7 @@ ext {
 
     //region TIM
     //https://github.com/trifork/TIMEncryptedStorage-Android
-    tim_encrypted_storage_version = "2.0.0"
+    tim_encrypted_storage_version = "2.1.0"
     timEncryptedStorage = "com.github.trifork:TIMEncryptedStorage-Android:$tim_encrypted_storage_version"
     //endregion
 
