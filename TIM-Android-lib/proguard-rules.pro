@@ -37,6 +37,6 @@
 -keep class com.trifork.timandroid.TIMDataStorage {
     *;
 }
--keep class com.trifork.timandroid.helpers {
+-keep class com.trifork.timandroid.helpers.** {
     *;
 }
