@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.trifork.timandroid.internal
 
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -6,7 +8,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.trifork.timandroid.TIMAppBackgroundMonitor
 import java.time.ZonedDateTime
 
-class TIMAppBackgroundMonitorInternal : TIMAppBackgroundMonitor, ApplicationLifecycleObserver() {
+internal class TIMAppBackgroundMonitorInternal : TIMAppBackgroundMonitor, ApplicationLifecycleObserver() {
 
     companion object {
         fun newInstance(): TIMAppBackgroundMonitorInternal {
@@ -58,7 +60,7 @@ class TIMAppBackgroundMonitorInternal : TIMAppBackgroundMonitor, ApplicationLife
     //endregion
 }
 
-abstract class ApplicationLifecycleObserver : DefaultLifecycleObserver {
+internal abstract class ApplicationLifecycleObserver : DefaultLifecycleObserver {
 
     override fun onStart(owner: LifecycleOwner) {
         onAppForeground()

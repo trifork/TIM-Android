@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.trifork.timandroid.models.errors
 
 import androidx.biometric.BiometricPrompt
