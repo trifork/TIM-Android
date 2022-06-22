@@ -3,6 +3,7 @@ package com.trifork.timandroid
 import android.net.*
 import com.trifork.timandroid.models.*
 import com.trifork.timandroid.models.openid.*
+import com.trifork.timandroid.testHelpers.*
 import org.junit.*
 import org.junit.runner.RunWith
 import org.robolectric.*
@@ -17,9 +18,9 @@ class TIMTests {
         fun shouldPopulateFields() {
             val tim = TIMImpl()
             tim.configure(config, context = RuntimeEnvironment.getApplication())
-            Assert.assertNotNull(tim.storage)
-            Assert.assertNotNull(tim.auth)
-            Assert.assertNotNull(tim.logger)
+            tim.storage.assertNotNull()
+            tim.auth.assertNotNull()
+            tim.logger.assertNotNull()
         }
 
         @Test
@@ -50,9 +51,9 @@ class TIMTests {
     @Test
     fun isConfigured() {
         val tim = TIMImpl()
-        Assert.assertFalse(tim.isConfigured)
+        tim.isConfigured.assertFalse()
         tim.configure(config, context = RuntimeEnvironment.getApplication())
-        Assert.assertTrue(tim.isConfigured)
+        tim.isConfigured.assertTrue()
     }
 
     companion object {
