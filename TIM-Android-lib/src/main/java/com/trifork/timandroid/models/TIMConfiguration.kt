@@ -44,12 +44,12 @@ class TIMConfiguration {
         val fullTimUrl = Uri.parse("${timBaseUrl}/auth/realms/$realm")
 
         this.oidcConfig = TIMOpenIdConnectConfiguration(
-            fullTimUrl,
-            clientId,
-            redirectUri,
-            scopes,
-            additionalParameters,
-            prompts
+            issuerUri = fullTimUrl,
+            clientId = clientId,
+            redirectUri = redirectUri,
+            scopes = scopes,
+            additionalParameters = additionalParameters,
+            prompts = prompts
         )
         //TODO(Get the realmBaseUrl from the fullTimUrl)
         this.keyServiceConfig = TIMKeyServiceConfiguration("${timBaseUrl}/auth/realms/$realm/", keyServiceVersion)
