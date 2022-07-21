@@ -180,8 +180,12 @@ class AppAuthController(
             .setScopes(config.scopes)
             .setAdditionalParameters(config.additionalParameters)
             .also {
-                if(authorizationRequestNonce != null) it.setNonce(authorizationRequestNonce)
-                if (!config.prompts.isNullOrEmpty()) it.setPromptValues(config.prompts)
+                if(authorizationRequestNonce != null) {
+                    it.setNonce(authorizationRequestNonce)
+                }
+                if (!config.prompts.isNullOrEmpty()) {
+                    it.setPromptValues(config.prompts)
+                }
             }
             .build()
 
