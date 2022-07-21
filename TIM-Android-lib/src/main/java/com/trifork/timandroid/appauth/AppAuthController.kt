@@ -184,7 +184,6 @@ class AppAuthController(
                 if (!config.prompts.isNullOrEmpty()) it.setPromptValues(config.prompts)
             }
             .build()
-q
 
     /**
      * Attempts to retrieve a fresh accessToken
