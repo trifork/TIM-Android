@@ -177,7 +177,11 @@ class AppAuthController(
             ResponseTypeValues.CODE,
             config.redirectUri
         )
-            .setScopes(config.scopes)
+            .setScopes(config.scopes).let {
+                if (!config.prompts.isNullOrEmpty())
+                    it.setPromptValues(config.prompts)
+                it
+            }
             .setAdditionalParameters(config.additionalParameters)
             .let {
                 if(authorizationRequestNonce != null) it.setNonce(authorizationRequestNonce)
