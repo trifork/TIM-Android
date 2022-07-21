@@ -7,5 +7,6 @@ data class TIMOpenIdConnectConfiguration(
     val clientId: String,
     val redirectUri: Uri,
     val scopes: List<String>,
-    val additionalParameters: Map<String, String>
+    val additionalParameters: Map<String, String>,
+    val prompts: List<String>? = null,
 )
