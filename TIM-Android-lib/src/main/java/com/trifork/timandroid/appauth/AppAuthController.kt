@@ -179,13 +179,12 @@ class AppAuthController(
         )
             .setScopes(config.scopes)
             .setAdditionalParameters(config.additionalParameters)
-            .let {
+            .also {
                 if(authorizationRequestNonce != null) it.setNonce(authorizationRequestNonce)
                 if (!config.prompts.isNullOrEmpty()) it.setPromptValues(config.prompts)
-                it
             }
             .build()
-
+q
 
     /**
      * Attempts to retrieve a fresh accessToken
