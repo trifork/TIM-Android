@@ -4,40 +4,44 @@
 -optimizationpasses 5
 -keepattributes SourceFile,LineNumberTable
 
--keepclasseswithmembernames class com.trifork.timandroid.appauth.**{
+-keep class com.trifork.timandroid.appauth.** {
      *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.biometric.**{
+-keep class com.trifork.timandroid.biometric.** {
      *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.helpers.TIMLogger{
-     *;
-}
-
-
--keepclasseswithmembernames class com.trifork.timandroid.models.**{
+-keep class com.trifork.timandroid.helpers.TIMLogger {
      *;
 }
 
 
--keepclasseswithmembernames class com.trifork.timandroid.TIM {
+-keep class com.trifork.timandroid.models.** {
+     *;
+}
+
+
+-keep class com.trifork.timandroid.TIM {
     *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.TIMAppBackgroundMonitor {
+-keep class com.trifork.timandroid.TIMAppBackgroundMonitor {
     *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.TIMAuth {
+-keep class com.trifork.timandroid.TIMAuth {
     *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.TIMDataStorage {
+-keep class com.trifork.timandroid.TIMDataStorage {
     *;
 }
 
--keepclasseswithmembernames class com.trifork.timandroid.helpers.** {
+-keep class com.trifork.timandroid.helpers.** {
+    *;
+}
+
+-keep class com.trifork.timandroid.**$DefaultImpls{
     *;
 }
