@@ -42,6 +42,7 @@
     *;
 }
 
--keep class com.trifork.timandroid.**$DefaultImpls{
+#kotlin creates an internal DefaultImpls class for default implementaions of interfaces (even if there are none).
+-keep class com.trifork.timandroid.**$DefaultImpls {
     *;
 }
