@@ -17,9 +17,9 @@ ext {
 
     //region Kotlin
     //https://github.com/JetBrains/kotlin
-    kotlin_version = "1.7.0"
+    kotlin_version = "1.7.10"
     //https://github.com/Kotlin/kotlinx.coroutines
-    coroutines_version = "1.6.3"
+    coroutines_version = "1.6.4"
     //https://github.com/Kotlin/kotlinx.serialization
     kotlinx_serialization_version = "1.3.3"
     kotlin = [
@@ -58,7 +58,7 @@ ext {
     //region mockk
 
     //https://search.maven.org/search?q=a:mockk
-    mockk_version = "1.12.4"
+    mockk_version = "1.12.5"
     mockk = [
             mockk : "io.mockk:mockk:$mockk_version",
             android: "io.mockk:mockk-android:$mockk_version",
@@ -74,6 +74,7 @@ ext {
     ]
     //endregion
 
+    //https://github.com/robolectric/robolectric
     roboleltric_version = "4.8.1"
     roboleltric = [
             roboleltric: "org.robolectric:robolectric:$roboleltric_version"
@@ -81,7 +82,7 @@ ext {
 
     //region Lifecycle
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
-    androidx_lifecycle_version = "2.4.1"
+    androidx_lifecycle_version = "2.5.1"
     lifecycle = [
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
             androidx: "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
