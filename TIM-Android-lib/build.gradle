@@ -15,7 +15,7 @@ android {
         // The minSdk should never be lower than 23, as it relies on the keystore to be properly working.
         // See https://developer.android.com/jetpack/androidx/releases/security#security-crypto-1.1.0-alpha01
         // and https://developer.android.com/training/articles/keystore#SupportedCiphers
-        minSdk 26
+        minSdk 24
         targetSdk 32
         versionCode 1
         versionName "1.0.0"
