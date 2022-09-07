@@ -1,6 +1,7 @@
 package com.trifork.timandroid.models
 
 import android.net.Uri
+import com.trifork.timandroid.models.openid.BackwardSupportConfiguration
 import com.trifork.timandroid.models.openid.TIMOpenIdConnectConfiguration
 import com.trifork.timencryptedstorage.keyservice.TIMKeyService
 import com.trifork.timencryptedstorage.models.TIMESEncryptionMethod
@@ -39,8 +40,18 @@ class TIMConfiguration {
      * @param additionalParameters Additional parameters, e.g.
      * @param encryptionMethod Optional encryption method, [TIMESEncryptionMethod.AesGcm] is default and only supported
      * @param keyServiceVersion Optional key service version, defaults to [TIMKeyServiceVersion.V1]
+     * @param backwardSupportConfiguration Optional configuration to support refresh tokens from old tokens.
      */
-    constructor(timBaseUrl: URL, realm: String, clientId: String, redirectUri: Uri, scopes: List<String>, additionalParameters: Map<String, String> = mapOf(), encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm, keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1, prompts: List<String>? = null) {
+    constructor(timBaseUrl: URL,
+                realm: String,
+                clientId: String,
+                redirectUri: Uri,
+                scopes: List<String>,
+                additionalParameters: Map<String, String> = mapOf(),
+                encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm,
+                keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1, prompts: List<String>? = null,
+                backwardSupportConfiguration: BackwardSupportConfiguration? = null) {
+
         val fullTimUrl = Uri.parse("${timBaseUrl}/auth/realms/$realm")
 
         this.oidcConfig = TIMOpenIdConnectConfiguration(
@@ -49,7 +60,8 @@ class TIMConfiguration {
             redirectUri = redirectUri,
             scopes = scopes,
             additionalParameters = additionalParameters,
-            prompts = prompts
+            prompts = prompts,
+            backwardSupportConfiguration = backwardSupportConfiguration
         )
         //TODO(Get the realmBaseUrl from the fullTimUrl)
         this.keyServiceConfig = TIMKeyServiceConfiguration("${timBaseUrl}/auth/realms/$realm/", keyServiceVersion)

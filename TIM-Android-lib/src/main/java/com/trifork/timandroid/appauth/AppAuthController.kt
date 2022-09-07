@@ -33,7 +33,7 @@ class AppAuthController(
 
     override fun getLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String?): Deferred<TIMResult<Intent, TIMAuthError>> =
         scope.async {
-            val serviceConfigResult = discoverConfiguration(scope).await()
+            val serviceConfigResult = discoverConfiguration(scope, null).await()
             when (serviceConfigResult) {
                 is TIMResult.Success -> {
                     val authRequest = buildAuthRequest(serviceConfigResult.value, authorizationRequestNonce)
@@ -86,7 +86,7 @@ class AppAuthController(
         scope: CoroutineScope,
         refreshToken: JWT
     ): Deferred<TIMResult<JWT, TIMAuthError>> = scope.async {
-        val discoverServiceConfigResult = discoverConfiguration(scope).await()
+        val discoverServiceConfigResult = discoverConfiguration(scope, refreshToken).await()
         val discoveredServiceConfig = when (discoverServiceConfigResult) {
             is TIMResult.Success -> discoverServiceConfigResult.value
             is TIMResult.Failure -> return@async discoverServiceConfigResult
@@ -94,8 +94,7 @@ class AppAuthController(
 
         val tokenRequest = TokenRequest.Builder(
             discoverServiceConfigResult.value,
-            config.clientId
-        )
+            refreshToken.authorizedParty ?: config.clientId)
             .setScopes(config.scopes)
             .setAdditionalParameters(config.additionalParameters)
             .setGrantType(GrantTypeValues.REFRESH_TOKEN)
@@ -215,10 +214,10 @@ class AppAuthController(
      * This implementation uses [AppAuthController.config] passed on creation of this class
      * @return The service configuration for the given OpenID Connect issuer
      */
-    private fun discoverConfiguration(scope: CoroutineScope): Deferred<TIMResult<AuthorizationServiceConfiguration, TIMAuthError>> =
+    private fun discoverConfiguration(scope: CoroutineScope, refreshToken: JWT?): Deferred<TIMResult<AuthorizationServiceConfiguration, TIMAuthError>> =
         scope.async {
             suspendCoroutine { continuation ->
-                AuthorizationServiceConfiguration.fetchFromIssuer(config.issuerUri) { configuration, error ->
+                AuthorizationServiceConfiguration.fetchFromIssuer(config.getIssuer(refreshToken)) { configuration, error ->
                     continuation.resume(
                         handleAppAuthCallback(
                             configuration,

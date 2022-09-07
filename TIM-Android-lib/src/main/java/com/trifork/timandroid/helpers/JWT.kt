@@ -22,7 +22,8 @@ class JWT(
     val token: JWTString,
     val userId: String,
     val expire: String?,
-    val issuer: String?
+    val issuer: String?,
+    val authorizedParty: String?,
 ) {
     companion object {
         fun newInstance(token: JWTString): TIMResult<JWT, TIMEncryptedStorageError.KeyServiceJWTDecodeFailed> {
@@ -47,7 +48,8 @@ class JWT(
                 token = token,
                 userId = userId,
                 expire = zonedDateTime,
-                issuer = jwt.issuer
+                issuer = jwt.issuer,
+                authorizedParty = jwt.authorizedParty
             ).toTIMSuccess()
         }
 
