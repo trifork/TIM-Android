@@ -50,7 +50,7 @@ class TIMConfiguration {
                 additionalParameters: Map<String, String> = mapOf(),
                 encryptionMethod: TIMESEncryptionMethod = TIMESEncryptionMethod.AesGcm,
                 keyServiceVersion: TIMKeyServiceVersion = TIMKeyServiceVersion.V1, prompts: List<String>? = null,
-                backwardSupportConfiguration: BackwardSupportConfiguration? = null) {
+                backwardSupportConfiguration: TIMBackwardSupportConfiguration? = null) {
 
         val fullTimUrl = Uri.parse("${timBaseUrl}/auth/realms/$realm")
 
@@ -61,7 +61,9 @@ class TIMConfiguration {
             scopes = scopes,
             additionalParameters = additionalParameters,
             prompts = prompts,
-            backwardSupportConfiguration = backwardSupportConfiguration
+            backwardSupportConfiguration = backwardSupportConfiguration?.issuer?.let {
+                return@let BackwardSupportConfiguration(issuer = Uri.parse("${it}/auth/realms/$realm"))
+            }
         )
         //TODO(Get the realmBaseUrl from the fullTimUrl)
         this.keyServiceConfig = TIMKeyServiceConfiguration("${timBaseUrl}/auth/realms/$realm/", keyServiceVersion)
@@ -80,4 +82,6 @@ class TIMConfiguration {
         this.encryptionMethod = encryptionMethod
     }
 }
+
+data class TIMBackwardSupportConfiguration(val issuer: Uri)
 

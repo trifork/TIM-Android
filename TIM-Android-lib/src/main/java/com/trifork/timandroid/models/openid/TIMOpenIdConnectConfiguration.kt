@@ -17,12 +17,12 @@ data class TIMOpenIdConnectConfiguration(
 
     fun getIssuer(refreshToken: JWT? = null): Uri {
         return if (refreshToken?.issuer != null
-            && refreshToken.issuer == backwardSupportConfiguration?.issuer) {
-            Uri.parse(backwardSupportConfiguration.issuer)
+            && refreshToken.issuer == backwardSupportConfiguration?.issuer?.toString()) {
+            backwardSupportConfiguration.issuer
         } else {
             issuerUri
         }
     }
 }
 
-data class BackwardSupportConfiguration(val issuer: String)
+data class BackwardSupportConfiguration(val issuer: Uri)
