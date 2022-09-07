@@ -83,5 +83,5 @@ class TIMConfiguration {
     }
 }
 
-data class TIMBackwardSupportConfiguration(val issuer: Uri)
+data class TIMBackwardSupportConfiguration(val issuer: URL)
 
