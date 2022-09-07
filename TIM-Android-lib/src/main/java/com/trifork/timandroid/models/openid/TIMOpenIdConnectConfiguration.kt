@@ -12,7 +12,7 @@ data class TIMOpenIdConnectConfiguration(
     val scopes: List<String>,
     val additionalParameters: Map<String, String>,
     val prompts: List<String>? = null,
-    val backwardSupportConfiguration: BackwardSupportConfiguration?) {
+    val backwardSupportConfiguration: BackwardSupportConfiguration? = null) {
 
 
     fun getIssuer(refreshToken: JWT? = null): Uri {
