@@ -8,15 +8,15 @@ plugins {
 apply from: '../dependencies.gradle'
 
 android {
-    compileSdk 32
+    compileSdk 33
 
 
     defaultConfig {
-        // The minSdk should never be lower than 23, as it relies on the keystore to be properly working.
+        // The minSdk should never be lower than 24, as it relies on the keystore to be properly working.
         // See https://developer.android.com/jetpack/androidx/releases/security#security-crypto-1.1.0-alpha01
         // and https://developer.android.com/training/articles/keystore#SupportedCiphers
-        minSdk 26
-        targetSdk 32
+        minSdk 24
+        targetSdk 33
         versionCode 1
         versionName "1.0.0"
 
