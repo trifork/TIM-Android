@@ -36,12 +36,12 @@ internal class TIMAuthInternal(
     ): Deferred<TIMResult<Unit, TIMAuthError>> =
         openIdController.handleLoginIntentResult(scope, dataIntent)
 
-    override fun accessTokenBlocking(): TIMResult<JWT, TIMError> = runBlocking {
-        return@runBlocking accessToken(this).await()
+    override fun accessTokenBlocking(forceRefresh: Boolean): TIMResult<JWT, TIMError> = runBlocking {
+        return@runBlocking accessToken(this, forceRefresh).await()
     }
 
-    override fun accessToken(scope: CoroutineScope): Deferred<TIMResult<JWT, TIMError>> =
-        openIdController.accessToken(scope, false)
+    override fun accessToken(scope: CoroutineScope, forceRefresh: Boolean): Deferred<TIMResult<JWT, TIMError>> =
+        openIdController.accessToken(scope, forceRefresh)
 
     override fun getOpenIDConnectLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String?): Deferred<TIMResult<Intent, TIMAuthError>> =
         openIdController.getLoginIntent(scope, authorizationRequestNonce)
