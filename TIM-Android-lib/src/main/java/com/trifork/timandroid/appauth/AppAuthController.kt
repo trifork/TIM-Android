@@ -139,7 +139,7 @@ class AppAuthController(
             return@async TIMAuthError.AuthStateWasNull().toTIMFailure()
         }
 
-        val freshTokenResult = performActionWithFreshTokens(scope).await()
+        val freshTokenResult = performActionWithFreshTokens(scope, forceRefresh).await()
 
         return@async when (freshTokenResult) {
             is TIMResult.Failure -> freshTokenResult.error.toTIMFailure()
@@ -194,10 +194,14 @@ class AppAuthController(
      * @return a fresh OpenID accessToken
      */
     private fun performActionWithFreshTokens(
-        scope: CoroutineScope
+        scope: CoroutineScope,
+        forceRefresh: Boolean
     ): Deferred<TIMResult<String, TIMAuthError>> =
         scope.async {
             suspendCoroutine { continuation ->
+                if (forceRefresh) {
+                    authState?.needsTokenRefresh = true
+                }
                 authState?.performActionWithFreshTokens(authorizationService) { accessToken, _, error ->
                     continuation.resume(
                         handleAppAuthCallback(
