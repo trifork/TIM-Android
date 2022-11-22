@@ -32,15 +32,16 @@ interface TIMAuth {
      * A blocking version of the [accessToken] function which is useful when adding the accessToken to the headers of a request
      * Gets the current access token from the current session if available
      * This will automatically renew the access token if necessary and if the current refresh token is valid
-     *
+     * @param forceRefresh boolean deciding if the accessToken should be forcefully refreshed. Defaults to false.
      */
-    fun accessTokenBlocking(): TIMResult<JWT, TIMError>
+    fun accessTokenBlocking(forceRefresh: Boolean = false): TIMResult<JWT, TIMError>
 
     /**
      * Gets the current access token from the current session if available
      * This will automatically renew the access token if necessary and if the current refresh token is valid
+     * @param forceRefresh boolean deciding if the accessToken should be forcefully refreshed. Defaults to false.
      */
-    fun accessToken(scope: CoroutineScope): Deferred<TIMResult<JWT, TIMError>>
+    fun accessToken(scope: CoroutineScope, forceRefresh: Boolean = false): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * Get a intent for performing a OAuth login with OpenID Connect.
