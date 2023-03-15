@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import com.trifork.timandroid.TIMAppBackgroundMonitor
 import com.trifork.timandroid.TIMAuth
 import com.trifork.timandroid.TIMDataStorage
+import com.trifork.timandroid.appauth.LoginListener
 import com.trifork.timandroid.appauth.OpenIDConnectController
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
@@ -25,6 +26,9 @@ internal class TIMAuthInternal(
 ) : TIMAuth {
 
     override fun isLoggedIn(): Boolean = openIdController.isLoggedIn()
+
+    override fun setLoginListener(listener: LoginListener?) =
+        openIdController.setLoginListener(listener)
 
     override fun getRefreshToken(): JWT? = openIdController.refreshToken()
 

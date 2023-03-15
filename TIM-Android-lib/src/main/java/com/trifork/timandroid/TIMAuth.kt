@@ -3,6 +3,7 @@ package com.trifork.timandroid
 import android.content.Intent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.trifork.timandroid.appauth.LoginListener
 import com.trifork.timandroid.helpers.BiometricRefreshToken
 import com.trifork.timandroid.helpers.JWT
 import com.trifork.timandroid.models.errors.TIMAuthError
@@ -94,4 +95,9 @@ interface TIMAuth {
      * Disables the background timeout
      */
     fun disableBackgroundTimeout()
+
+    /**
+     * Sets a listener that will be invoked with a boolean indicating whether a user is currently logged in or not.
+     */
+    fun setLoginListener(listener: LoginListener?)
 }
