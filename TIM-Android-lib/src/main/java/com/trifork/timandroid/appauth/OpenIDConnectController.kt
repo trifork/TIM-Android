@@ -53,4 +53,9 @@ interface OpenIDConnectController {
      * Clears the current state for the logged in user
      */
     fun logout()
+
+    /**
+     * Set a listener that will be invoked with a boolean indicating whether a user is currently logged in or not.
+     */
+    fun setLoginListener(listener: LoginListener?)
 }
