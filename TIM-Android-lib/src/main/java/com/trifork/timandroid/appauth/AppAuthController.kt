@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import net.openid.appauth.*
+import java.lang.ref.WeakReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.properties.Delegates
@@ -28,16 +29,16 @@ class AppAuthController(
         AppAuthConfiguration.DEFAULT
     )
 
-    private var loginListener: LoginListener? = null
+    private var loginListener: WeakReference<LoginListener>? = null
 
     private var authState: AuthState? by Delegates.observable(null) { _, _, newValue ->
-        loginListener?.invoke(newValue != null)
+        loginListener?.get()?.invoke(newValue != null)
     }
 
     override fun isLoggedIn(): Boolean = authState != null
 
     override fun setLoginListener(listener: LoginListener?) {
-        loginListener = listener
+        loginListener = listener?.let { WeakReference(it) }
     }
 
     override fun getLoginIntent(scope: CoroutineScope, authorizationRequestNonce: String?): Deferred<TIMResult<Intent, TIMAuthError>> =
