@@ -1,13 +1,10 @@
 package com.trifork.timandroid.helpers
 
 import android.util.Base64
-import com.trifork.timandroid.helpers.JWTDecoder.padForBase64
-import com.trifork.timandroid.helpers.ext.*
 import com.trifork.timencryptedstorage.models.TIMResult
 import com.trifork.timencryptedstorage.models.toTIMFailure
 import com.trifork.timencryptedstorage.models.toTIMSuccess
 import org.json.JSONObject
-import kotlin.math.ceil
 
 object JWTDecoder {
 
@@ -30,8 +27,8 @@ object JWTDecoder {
 
     @Throws
     private fun parseJWT(fromString: String): HashMap<String, Any> {
-        val bodyData = base64UrlDecode(fromString)
-        val json = JSONObject(String(bodyData))
+        val bodyData = String(Base64.decode(fromString, Base64.URL_SAFE), Charsets.UTF_8)
+        val json = JSONObject(bodyData)
         return json.toMap()
     }
 
@@ -43,34 +40,4 @@ object JWTDecoder {
         return list
     }
 
-    private fun base64UrlDecode(value: String): ByteArray {
-        val base64 = value.replaceUrlBase64Chars()
-        val paddingLength = base64.getBase64PaddingLength()
-        val paddedBase64 = base64.padIfNeededForBase64(paddingLength)
-        return Base64.decode(paddedBase64, Base64.URL_SAFE)
-    }
-
-    private fun String.replaceUrlBase64Chars(): String {
-        return replace("-", "+")
-            .replace("_", "/")
-    }
-
-    private fun String.getBase64PaddingLength(): Int {
-        val length = convertToByteArray().size.toDouble()
-        val requiredLength = 4 * ceil(length / 4)
-        return (requiredLength - length).toInt()
-    }
-
-    private fun String.padIfNeededForBase64(paddingLength: Int): String {
-        return if (paddingLength > 0) {
-            this.padForBase64(paddingLength)
-        } else {
-            this
-        }
-    }
-
-    private fun String.padForBase64(paddingLength: Int): String {
-        val padding = "".padStart(paddingLength, '=')
-        return this + padding
-    }
 }
