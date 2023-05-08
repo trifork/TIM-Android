@@ -7,6 +7,8 @@ plugins {
 
 apply from: '../dependencies.gradle'
 
+final def javaToolchainVersion = "1.8"
+
 android {
     compileSdk 33
 
@@ -18,7 +20,7 @@ android {
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "1.0.0"
+        versionName versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -39,11 +41,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility javaToolchainVersion
+        targetCompatibility javaToolchainVersion
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = javaToolchainVersion
+    }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 

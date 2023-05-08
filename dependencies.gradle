@@ -1,27 +1,27 @@
 ext {
     //region Android
     //https://androidx.tech/artifacts/test.ext/junit/
-    androidx_junit_version = "1.1.3"
+    androidx_junit_version = "1.1.5"
     androidX = [
             //https://developer.android.com/jetpack/androidx/releases/core
-            coreKtx  : 'androidx.core:core-ktx:1.8.0',
+            coreKtx  : 'androidx.core:core-ktx:1.10.0',
             //https://developer.android.com/jetpack/androidx/releases/appcompat
-            appCompat: 'androidx.appcompat:appcompat:1.4.2',
+            appCompat: 'androidx.appcompat:appcompat:1.6.1',
             test     : [
                     androidJUnit: "androidx.test.ext:junit:$androidx_junit_version",
                     //https://androidx.tech/artifacts/test.espresso/espresso-core/
-                    espresso    : 'androidx.test.espresso:espresso-core:3.4.0'
+                    espresso    : 'androidx.test.espresso:espresso-core:3.5.1'
             ]
     ]
     //endregion
 
     //region Kotlin
     //https://github.com/JetBrains/kotlin
-    kotlin_version = "1.7.10"
+    kotlin_version = "1.8.21"
     //https://github.com/Kotlin/kotlinx.coroutines
-    coroutines_version = "1.6.4"
+    coroutines_version = "1.7.0"
     //https://github.com/Kotlin/kotlinx.serialization
-    kotlinx_serialization_version = "1.3.3"
+    kotlinx_serialization_version = "1.5.0"
     kotlin = [
             coroutinesAndroid: [
                     coroutinesAndroid: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
@@ -58,7 +58,7 @@ ext {
     //region mockk
 
     //https://search.maven.org/search?q=a:mockk
-    mockk_version = "1.12.5"
+    mockk_version = "1.13.5"
     mockk = [
             mockk : "io.mockk:mockk:$mockk_version",
             android: "io.mockk:mockk-android:$mockk_version",
@@ -67,7 +67,7 @@ ext {
     //endregion
 
     //region Biometric
-    biometric_version = "1.2.0-alpha04"
+    biometric_version = "1.2.0-alpha05"
     biometric = [
             //https://developer.android.com/jetpack/androidx/releases/biometric
             biometric: "androidx.biometric:biometric-ktx:$biometric_version"
@@ -75,14 +75,14 @@ ext {
     //endregion
 
     //https://github.com/robolectric/robolectric
-    roboleltric_version = "4.8.1"
+    roboleltric_version = "4.10.2"
     roboleltric = [
             roboleltric: "org.robolectric:robolectric:$roboleltric_version"
     ]
 
     //region Lifecycle
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
-    androidx_lifecycle_version = "2.5.1"
+    androidx_lifecycle_version = "2.6.1"
     lifecycle = [
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
             androidx: "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"

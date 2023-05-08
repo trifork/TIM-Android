@@ -555,3 +555,4 @@ Every dependency in `TIM` is build upon interfaces, such that you can implement 
 ## For developers of TIM
 
 see [Development.md](Development.md)
+(also includes how to use a local version of TIM for your project)
