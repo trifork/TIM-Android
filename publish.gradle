@@ -3,10 +3,9 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.trifork'
             artifactId = 'TIM-Android'
-
+            version = versionName
             afterEvaluate {
                 from components.release
-                version = versionName
             }
         }
     }
