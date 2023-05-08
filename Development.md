@@ -10,6 +10,33 @@ Other build variants use the defined version from github. The debug build uses t
 
 
 ### Testing locally
+
+#### Using mavenLocal
+You can use a "local" version of this library by updating the version, followed by running the gradle task "publishMavenLocal"
+Then in your target project include the "mavenLocal()" repository and update the required version of TIM. 
+
+E.g in the target project
+````groovy
+repositories {
+    mavenLocal()
+}
+````
+
+E.g update the version in TIM ([build.gradle](build.gradle) 
+````groovy
+versionName = "my-local-version"
+````
+
+then referencing the dependency in your project like so
+````groovy
+implementation "com.github.trifork:tim-android:my-local-version"
+````
+
+then running in TIM 
+````groovy
+gradle publishToMavenLocal
+````
+
 For testing changes to a local copy of the TIM library, add the following include in your `settings.gradle` file. (The TIM-Android folder is located in the same directory as the project files in this example)
 ```groovy
 include ':TIM-Android'
@@ -36,9 +63,5 @@ Please refer to the official jitpack documentation for more information about ho
 
 ![Trifork Logo](https://jira.trifork.com/s/-p6q4kx/804003/9c3efa9da3fa1ef9d504f68de6c57528/_/jira-logo-scaled.png)
 
-
-
 ## Deprecations
-
 The public API should remain stable across minor versions and revisions.
-

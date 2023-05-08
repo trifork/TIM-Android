@@ -1,12 +1,12 @@
-// See https://github.com/jitpack/android-example
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.trifork'
+            artifactId = 'TIM-Android'
 
-                groupId = 'com.trifork.tim'
-                artifactId = 'tim'
+            afterEvaluate {
+                from components.release
+                version = versionName
             }
         }
     }
