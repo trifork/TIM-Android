@@ -74,3 +74,4 @@ lint/tmp/
 # lint/reports/
 .idea/misc.xml
 .idea/gradle.properties
+/.gitVersionCode
