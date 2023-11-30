@@ -1,14 +1,13 @@
 ext {
     //region Android
-    //https://androidx.tech/artifacts/test.ext/junit/
-    androidx_junit_version = "1.1.5"
     androidX = [
             //https://developer.android.com/jetpack/androidx/releases/core
             coreKtx  : 'androidx.core:core-ktx:1.10.0',
             //https://developer.android.com/jetpack/androidx/releases/appcompat
             appCompat: 'androidx.appcompat:appcompat:1.6.1',
             test     : [
-                    androidJUnit: "androidx.test.ext:junit:$androidx_junit_version",
+                    //https://androidx.tech/artifacts/test.ext/junit/
+                    androidJUnit: "androidx.test.ext:junit:1.1.5",
                     //https://androidx.tech/artifacts/test.espresso/espresso-core/
                     espresso    : 'androidx.test.espresso:espresso-core:3.5.1'
             ]
@@ -17,15 +16,15 @@ ext {
 
     //region Kotlin
     //https://github.com/JetBrains/kotlin
-    kotlin_version = "1.8.21"
+    kotlin_version = "1.9.21"
     //https://github.com/Kotlin/kotlinx.coroutines
-    coroutines_version = "1.7.0"
+    coroutines_version = "1.7.3"
     //https://github.com/Kotlin/kotlinx.serialization
-    kotlinx_serialization_version = "1.5.0"
+    kotlinx_serialization_version = "1.6.1"
     kotlin = [
             coroutinesAndroid: [
-                    coroutinesAndroid: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
-                    coroutinesAndroidTest : "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
+                    coroutinesAndroid    : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
+                    coroutinesAndroidTest: "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
             ],
             serialization    : [
                     json: "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version",
@@ -50,7 +49,7 @@ ext {
     //https://github.com/junit-team/junit4
     jUnit4_version = "4.13.2"
     jUnit = [
-            junit : "junit:junit:$jUnit4_version",
+            junit: "junit:junit:$jUnit4_version",
 
     ]
     //endregion
@@ -58,11 +57,11 @@ ext {
     //region mockk
 
     //https://search.maven.org/search?q=a:mockk
-    mockk_version = "1.13.5"
+    mockk_version = "1.13.8"
     mockk = [
-            mockk : "io.mockk:mockk:$mockk_version",
+            mockk  : "io.mockk:mockk:$mockk_version",
             android: "io.mockk:mockk-android:$mockk_version",
-            jvm: "io.mockk:mockk-agent-jvm:$mockk_version"
+            jvm    : "io.mockk:mockk-agent-jvm:$mockk_version"
     ]
     //endregion
 
@@ -75,17 +74,17 @@ ext {
     //endregion
 
     //https://github.com/robolectric/robolectric
-    roboleltric_version = "4.10.2"
+    roboleltric_version = "4.11.1"
     roboleltric = [
             roboleltric: "org.robolectric:robolectric:$roboleltric_version"
     ]
 
     //region Lifecycle
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
-    androidx_lifecycle_version = "2.6.1"
+    androidx_lifecycle_version = "2.6.2"
     lifecycle = [
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
-            androidx: "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
+            androidx   : "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
     ]
     //endregion
 }

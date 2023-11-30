@@ -7,11 +7,12 @@ plugins {
 
 apply from: '../dependencies.gradle'
 
-final def javaToolchainVersion = "1.8"
+final def javaToolchainVersion = "11"
 
 android {
     compileSdk 33
 
+    namespace "com.trifork.timandroid"
 
     defaultConfig {
         // The minSdk should never be lower than 24, as it relies on the keystore to be properly working.
