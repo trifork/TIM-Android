@@ -2,9 +2,9 @@ ext {
     //region Android
     androidX = [
             //https://developer.android.com/jetpack/androidx/releases/core
-            coreKtx  : 'androidx.core:core-ktx:1.10.0',
+            coreKtx  : 'androidx.core:core-ktx:1.13.1',
             //https://developer.android.com/jetpack/androidx/releases/appcompat
-            appCompat: 'androidx.appcompat:appcompat:1.6.1',
+            appCompat: 'androidx.appcompat:appcompat:1.7.0',
             test     : [
                     //https://androidx.tech/artifacts/test.ext/junit/
                     androidJUnit: "androidx.test.ext:junit:1.1.5",
@@ -16,11 +16,11 @@ ext {
 
     //region Kotlin
     //https://github.com/JetBrains/kotlin
-    kotlin_version = "1.9.21"
+    kotlin_version = "2.0.0"
     //https://github.com/Kotlin/kotlinx.coroutines
-    coroutines_version = "1.7.3"
+    coroutines_version = "1.9.0-RC"
     //https://github.com/Kotlin/kotlinx.serialization
-    kotlinx_serialization_version = "1.6.1"
+    kotlinx_serialization_version = "1.7.0"
     kotlin = [
             coroutinesAndroid: [
                     coroutinesAndroid    : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
@@ -32,59 +32,46 @@ ext {
     ]
     //endregion
 
-    //region TIM
     //https://github.com/trifork/TIMEncryptedStorage-Android
     tim_encrypted_storage_version = "2.1.1"
     timEncryptedStorage = "com.github.trifork:TIMEncryptedStorage-Android:$tim_encrypted_storage_version"
-    //endregion
 
-    //region AppAuth
     //https://github.com/openid/AppAuth-Android
     appauth_version = "0.11.1"
     appAuth = "net.openid:appauth:$appauth_version"
-    //endregion
 
     // Instrumented test is not yet supported in jUnit5? Therefore we still use 4
-    //region JUnit
     //https://github.com/junit-team/junit4
     jUnit4_version = "4.13.2"
     jUnit = [
             junit: "junit:junit:$jUnit4_version",
 
     ]
-    //endregion
-
-    //region mockk
 
     //https://search.maven.org/search?q=a:mockk
-    mockk_version = "1.13.8"
+    mockk_version = "1.13.11"
     mockk = [
             mockk  : "io.mockk:mockk:$mockk_version",
             android: "io.mockk:mockk-android:$mockk_version",
             jvm    : "io.mockk:mockk-agent-jvm:$mockk_version"
     ]
-    //endregion
 
-    //region Biometric
     biometric_version = "1.2.0-alpha05"
     biometric = [
             //https://developer.android.com/jetpack/androidx/releases/biometric
             biometric: "androidx.biometric:biometric-ktx:$biometric_version"
     ]
-    //endregion
 
     //https://github.com/robolectric/robolectric
-    roboleltric_version = "4.11.1"
+    roboleltric_version = "4.12.2"
     roboleltric = [
             roboleltric: "org.robolectric:robolectric:$roboleltric_version"
     ]
 
-    //region Lifecycle
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
-    androidx_lifecycle_version = "2.6.2"
+    androidx_lifecycle_version = "2.8.2"
     lifecycle = [
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
             androidx   : "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
     ]
-    //endregion
 }

@@ -7,6 +7,7 @@ import org.junit.*
 import org.junit.runner.RunWith
 import org.robolectric.*
 
+@RunWith(RobolectricTestRunner::class)
 class JWTTests {
 
     @RunWith(RobolectricTestRunner::class)
@@ -50,6 +51,11 @@ class JWTTests {
             jwtResult.assertIs<TIMResult.Failure<TIMEncryptedStorageError.KeyServiceJWTDecodeFailed>>()
             jwtResult.error.error.message.assert(JWT.MissingUserIdException.message!!)
         }
+    }
+
+    @Test
+    fun empty(){
+        //for roboletric test runner
     }
 
     companion object {
