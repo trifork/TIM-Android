@@ -17,7 +17,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
-class AppAuthController(
+public class AppAuthController(
     private val config: TIMOpenIdConnectConfiguration,
     context: Context
 ) : OpenIDConnectController {

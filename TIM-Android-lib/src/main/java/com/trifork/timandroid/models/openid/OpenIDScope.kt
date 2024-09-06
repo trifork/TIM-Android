@@ -1,7 +1,7 @@
 package com.trifork.timandroid.models.openid
 
-val OIDScopeOpenID = "openid"
-val OIDScopeProfile = "profile"
-val OIDScopeEmail = "email"
-val OIDScopeAddress = "address"
-val OIDScopePhone = "phone"
+public const val OIDScopeOpenID: String = "openid"
+public const val OIDScopeProfile: String = "profile"
+public const val OIDScopeEmail: String = "email"
+public const val OIDScopeAddress: String = "address"
+public const val OIDScopePhone: String = "phone"

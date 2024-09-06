@@ -14,8 +14,9 @@ buildscript {
 }
 
 ext {
-    versionName = "1.9.0-local"
+    versionName = "1.8.0-local"
 }
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

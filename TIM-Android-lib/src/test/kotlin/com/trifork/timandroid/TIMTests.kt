@@ -16,7 +16,7 @@ class TIMTests {
 
     @RunWith(RobolectricTestRunner::class)
     @Config(manifest=Config.NONE)
-    class Configure {
+    public class Configure {
         @Test
         fun shouldPopulateFields() {
             val tim = TIMImpl()

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -47,7 +49,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = javaToolchainVersion
-        freeCompilerArgs += "-Xexplicit-api=strict"
+//        freeCompilerArgs += "-Xexplicit-api=strict"
     }
     publishing {
         singleVariant("release") {
@@ -98,5 +100,25 @@ dependencies {
     implementation lifecycle.androidx
     //endregion
 }
+
+
+class ExplicitApiModePlugin implements Plugin<Project> {
+
+    void apply(Project project) {
+        project.tasks.withType(KotlinCompile.class).tap {
+            configureEach {
+                if (it.name.contains("Test")) {
+                    return
+                }
+                if (!project.hasProperty("kotlin.optOutExplicitApi")) {
+                    def kotlinCompile = it as KotlinCompile
+                    kotlinCompile.kotlinOptions.freeCompilerArgs += "-Xexplicit-api=strict"
+                }
+            }
+        }
+    }
+}
+
+apply plugin: ExplicitApiModePlugin
 
 apply from: "../publish.gradle"
