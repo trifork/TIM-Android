@@ -7,20 +7,20 @@ ext {
             appCompat: 'androidx.appcompat:appcompat:1.7.0',
             test     : [
                     //https://androidx.tech/artifacts/test.ext/junit/
-                    androidJUnit: "androidx.test.ext:junit:1.1.5",
+                    androidJUnit: "androidx.test.ext:junit:1.2.1",
                     //https://androidx.tech/artifacts/test.espresso/espresso-core/
-                    espresso    : 'androidx.test.espresso:espresso-core:3.5.1'
+                    espresso    : 'androidx.test.espresso:espresso-core:3.6.1'
             ]
     ]
     //endregion
 
     //region Kotlin
     //https://github.com/JetBrains/kotlin
-    kotlin_version = "2.0.0"
+    kotlin_version = "2.0.10"
     //https://github.com/Kotlin/kotlinx.coroutines
     coroutines_version = "1.9.0-RC"
     //https://github.com/Kotlin/kotlinx.serialization
-    kotlinx_serialization_version = "1.7.0"
+    kotlinx_serialization_version = "1.7.1"
     kotlin = [
             coroutinesAndroid: [
                     coroutinesAndroid    : "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
@@ -34,6 +34,7 @@ ext {
 
     //https://github.com/trifork/TIMEncryptedStorage-Android
     tim_encrypted_storage_version = "2.1.1"
+
     timEncryptedStorage = "com.github.trifork:TIMEncryptedStorage-Android:$tim_encrypted_storage_version"
 
     //https://github.com/openid/AppAuth-Android
@@ -49,7 +50,7 @@ ext {
     ]
 
     //https://search.maven.org/search?q=a:mockk
-    mockk_version = "1.13.11"
+    mockk_version = "1.13.12"
     mockk = [
             mockk  : "io.mockk:mockk:$mockk_version",
             android: "io.mockk:mockk-android:$mockk_version",
@@ -63,13 +64,13 @@ ext {
     ]
 
     //https://github.com/robolectric/robolectric
-    roboleltric_version = "4.12.2"
+    roboleltric_version = "4.13"
     roboleltric = [
             roboleltric: "org.robolectric:robolectric:$roboleltric_version"
     ]
 
     //https://developer.android.com/jetpack/androidx/releases/lifecycle
-    androidx_lifecycle_version = "2.8.2"
+    androidx_lifecycle_version = "2.8.4"
     lifecycle = [
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
             androidx   : "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"

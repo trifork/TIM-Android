@@ -4,11 +4,11 @@ import android.util.Log
 import com.trifork.timandroid.TIM
 import com.trifork.timencryptedstorage.helpers.TIMEncryptedStorageLogger
 
-interface TIMLogger {
-    fun log(priority: Int, tag: String, msg: String, throwable: Throwable? = null)
+public interface TIMLogger {
+    public fun log(priority: Int, tag: String, msg: String, throwable: Throwable? = null)
 }
 
-class TIMLoggerInternal : TIMLogger {
+internal class TIMLoggerInternal : TIMLogger {
     override fun log(priority: Int, tag: String, msg: String, throwable: Throwable?) {
         when (priority) {
             Log.VERBOSE -> Log.v(tag, msg, throwable)
@@ -22,6 +22,6 @@ class TIMLoggerInternal : TIMLogger {
 
 internal class TIMEncryptedStorageLoggerInternal : TIMEncryptedStorageLogger {
     override fun log(priority: Int, tag: String, msg: String, throwable: Throwable?) {
-        TIM.logger?.log(priority, tag, msg, throwable)
+        TIM.logger?.log(priority = priority, tag = tag, msg = msg, throwable = throwable)
     }
 }

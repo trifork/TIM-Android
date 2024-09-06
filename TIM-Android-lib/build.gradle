@@ -7,10 +7,10 @@ plugins {
 
 apply from: '../dependencies.gradle'
 
-final def javaToolchainVersion = "11"
+final def javaToolchainVersion = "17"
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     namespace "com.trifork.timandroid"
 
@@ -19,7 +19,7 @@ android {
         // See https://developer.android.com/jetpack/androidx/releases/security#security-crypto-1.1.0-alpha01
         // and https://developer.android.com/training/articles/keystore#SupportedCiphers
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName versionName
 
@@ -27,7 +27,7 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         //TODO(Necessary for test to run. But causes the sdk to catch redirects. Move this to testOptions? or change to some invalid value?)
-        android.defaultConfig.manifestPlaceholders = ['appAuthRedirectScheme': 'test']
+        android.defaultConfig.manifestPlaceholders = ["appAuthRedirectScheme": "test"]
     }
 
     buildTypes {
@@ -38,7 +38,7 @@ android {
         }
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
     compileOptions {
@@ -47,6 +47,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = javaToolchainVersion
+        freeCompilerArgs += "-Xexplicit-api=strict"
     }
     publishing {
         singleVariant("release") {
@@ -98,4 +99,4 @@ dependencies {
     //endregion
 }
 
-apply from: '../publish.gradle'
+apply from: "../publish.gradle"
