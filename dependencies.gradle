@@ -75,4 +75,6 @@ ext {
             commonJava8: "androidx.lifecycle:lifecycle-common-java8:$androidx_lifecycle_version",
             androidx   : "androidx.lifecycle:lifecycle-process:$androidx_lifecycle_version"
     ]
+    desugar_jdk_libs_version = "2.1.2"
+    desugar_jdk_libs = "com.android.tools:desugar_jdk_libs:$desugar_jdk_libs_version"
 }

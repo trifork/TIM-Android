@@ -46,6 +46,7 @@ android {
     compileOptions {
         sourceCompatibility javaToolchainVersion
         targetCompatibility javaToolchainVersion
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = javaToolchainVersion
@@ -98,6 +99,8 @@ dependencies {
     implementation lifecycle.commonJava8
     implementation lifecycle.androidx
     //endregion
+
+    coreLibraryDesugaring desugar_jdk_libs
 }
 
 
