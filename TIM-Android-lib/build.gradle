@@ -49,7 +49,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = javaToolchainVersion
-//        freeCompilerArgs += "-Xexplicit-api=strict"
     }
     publishing {
         singleVariant("release") {

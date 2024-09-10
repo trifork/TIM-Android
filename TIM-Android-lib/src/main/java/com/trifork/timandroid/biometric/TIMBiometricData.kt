@@ -183,8 +183,8 @@ internal object BiometricUtil {
                 super.onAuthenticationError(errorCode, errString)
                 listener.onBiometricAuthenticationError(
                     TIMStorageError.BiometricAuthenticationError(
-                        errorCode,
-                        Throwable(errString.toString())
+                        errorCode = errorCode,
+                        error = Throwable(errString.toString())
                     )
                 )
             }
