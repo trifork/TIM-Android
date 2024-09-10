@@ -12,6 +12,7 @@ public object JWTDecoder {
         jwtToken: String
     ): TIMResult<Map<String, Any>, Throwable> {
         val segments: List<String> = jwtToken.split(".")
+        //TODO validate cryptographic here
         return if (segments.size > 2) {
             decodeJWTPart(segments[1])
         } else {
