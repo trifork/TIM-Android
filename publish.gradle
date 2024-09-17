@@ -5,10 +5,17 @@ afterEvaluate {
             release(MavenPublication) {
                 groupId = 'com.github.trifork'
                 artifactId = 'TIM-Android'
-                version = versionName
+                version = getLatestGitTag()
                 from components.release
             }
-//            artifact("$buildDir/libs/TIM-Android-lib-sources.jar")
         }
     }
+}
+
+static String getLatestGitTag() {
+    return "git describe --tags --abbrev=0"
+            .execute()
+            .text
+            .replace("\r\n", "")
+            .replace("\n", "");
 }
