@@ -2,44 +2,47 @@
 
 package com.trifork.timandroid.helpers
 
-import android.util.Log
-import com.trifork.timandroid.TIM
-import com.trifork.timandroid.internal.TIMDataStorageInternal
-import com.trifork.timencryptedstorage.models.TIMResult
-import com.trifork.timencryptedstorage.models.errors.TIMEncryptedStorageError
-import com.trifork.timencryptedstorage.models.toTIMFailure
-import com.trifork.timencryptedstorage.models.toTIMSuccess
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import android.util.*
+import com.trifork.timandroid.*
+import com.trifork.timandroid.internal.*
+import com.trifork.timencryptedstorage.models.*
+import com.trifork.timencryptedstorage.models.errors.*
+import java.time.*
+import java.time.format.*
 
-class BiometricRefreshToken(
-    val refreshToken: JWT,
-    val longSecret: String
+public data class BiometricRefreshToken(
+    public val refreshToken: JWT,
+    public val longSecret: String
 )
 
-class JWT(
-    val token: JWTString,
-    val userId: String,
-    val expire: String?,
-    val issuer: String?
+public data class JWT(
+    public val token: JWTString,
+    public val userId: String,
+    public val expire: String?,
+    public val issuer: String?
 ) {
-    companion object {
-        fun newInstance(token: JWTString): TIMResult<JWT, TIMEncryptedStorageError.KeyServiceJWTDecodeFailed> {
-            val jwtResult = JWTDecoder.decode(token)
-            val jwt = when (jwtResult) {
+    public companion object {
+        public fun newInstance(
+            token: JWTString
+        ): TIMResult<JWT, TIMEncryptedStorageError.KeyServiceJWTDecodeFailed> {
+            val jwtResult: TIMResult<Map<String, Any>, Throwable> = JWTDecoder.decode(token)
+            val jwt: Map<String, Any> = when (jwtResult) {
                 is TIMResult.Failure -> return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(
                     jwtResult.error
                 ).toTIMFailure()
                 is TIMResult.Success -> jwtResult.value
             }
 
-            TIM.logger?.log(Log.DEBUG, TIMDataStorageInternal.TAG, "Decoded jwt token")
+            TIM.logger?.log(
+                priority = Log.DEBUG,
+                tag = TIMDataStorageInternal.TAG,
+                msg = "Decoded jwt token"
+            )
 
-            val userId = jwt.userId ?: return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(
+            val userId: String = jwt.userId ?: return TIMEncryptedStorageError.KeyServiceJWTDecodeFailed(
                 MissingUserIdException
             ).toTIMFailure()
-            val expire = jwt.expire?.toLong()
+            val expire: Long? = jwt.expire?.toLong()
 
             val zonedDateTime: String? = expire?.let { parseZonedDateTimeOrLog(it) }
 
@@ -66,7 +69,9 @@ class JWT(
             }
         }
 
-        val MissingUserIdException = Throwable("No userId in jwt")
+
+
+        public val MissingUserIdException: Throwable = Throwable("No userId in jwt")
 
     }
 

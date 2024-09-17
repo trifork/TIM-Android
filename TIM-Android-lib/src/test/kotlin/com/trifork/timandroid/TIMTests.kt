@@ -7,13 +7,16 @@ import com.trifork.timandroid.testHelpers.*
 import org.junit.*
 import org.junit.runner.RunWith
 import org.robolectric.*
+import org.robolectric.annotation.*
 import java.net.*
 
 @RunWith(RobolectricTestRunner::class)
+@Config(manifest=Config.NONE)
 class TIMTests {
 
     @RunWith(RobolectricTestRunner::class)
-    class Configure {
+    @Config(manifest=Config.NONE)
+    public class Configure {
         @Test
         fun shouldPopulateFields() {
             val tim = TIMImpl()

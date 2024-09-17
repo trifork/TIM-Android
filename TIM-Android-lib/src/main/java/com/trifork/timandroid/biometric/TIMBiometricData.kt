@@ -1,21 +1,20 @@
 package com.trifork.timandroid.biometric
 
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.provider.Settings
-import android.util.Log.DEBUG
-import androidx.annotation.RequiresApi
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
-import com.trifork.timandroid.TIM
-import com.trifork.timandroid.models.errors.TIMStorageError
-import javax.crypto.Cipher
+import android.app.*
+import android.content.*
+import android.os.*
+import android.provider.*
+import android.util.Log.*
+import androidx.annotation.*
+import androidx.biometric.*
+import androidx.biometric.BiometricManager.Authenticators.*
+import androidx.core.content.*
+import androidx.fragment.app.*
+import com.trifork.timandroid.*
+import com.trifork.timandroid.models.errors.*
+import javax.crypto.*
 
-class TIMBiometricData private constructor(
+public class TIMBiometricData private constructor(
     private var title: String,
     private var subtitle: String,
     private var description: String,
@@ -30,41 +29,60 @@ class TIMBiometricData private constructor(
         biometricUtilBuilder.confirmationRequired
     )
 
-    class Builder {
-        var title: String = "Biometric login for my app"
-            private set
-        var subtitle: String = "Log in using your biometric credential"
-            private set
-        var description: String = "Input your Fingerprint or FaceID to ensure it's you!"
-            private set
-        var negativeButtonText: String = "Cancel"
-            private set
-        var confirmationRequired: Boolean = false
+    public class Builder {
+
+        public var title: String = "Biometric login for my app"
             private set
 
-        fun title(title: String) = apply { this.title = title }
-        fun subtitle(subtitle: String) = apply { this.subtitle = subtitle }
-        fun description(description: String) = apply { this.description = description }
-        fun negativeButtonText(negativeButtonText: String) = apply { this.negativeButtonText = negativeButtonText }
-        fun setConfirmationRequired(confirmationRequired: Boolean) = apply { this.confirmationRequired = confirmationRequired }
+        public var subtitle: String = "Log in using your biometric credential"
+            private set
 
-        fun build() = TIMBiometricData(this)
+        public var description: String = "Input your Fingerprint or FaceID to ensure it's you!"
+            private set
+
+        public var negativeButtonText: String = "Cancel"
+            private set
+
+        public var confirmationRequired: Boolean = false
+            private set
+
+        public fun title(title: String): Builder = apply {
+            this.title = title
+        }
+
+        public fun subtitle(subtitle: String): Builder = apply {
+            this.subtitle = subtitle
+        }
+
+        public fun description(description: String): Builder = apply {
+            this.description = description
+        }
+
+        public fun negativeButtonText(negativeButtonText: String): Builder = apply {
+            this.negativeButtonText = negativeButtonText
+        }
+
+        public fun setConfirmationRequired(confirmationRequired: Boolean): Builder = apply {
+            this.confirmationRequired = confirmationRequired
+        }
+
+        public fun build(): TIMBiometricData = TIMBiometricData(this)
     }
 
-    fun showBiometricPrompt(
+    public fun showBiometricPrompt(
         fragmentActivity: FragmentActivity,
         listener: BiometricAuthListener,
         cipher: Cipher
     ) {
         BiometricUtil.showBiometricPrompt(
-            title,
-            subtitle,
-            description,
-            negativeButtonText,
-            confirmationRequired,
-            fragmentActivity,
-            listener,
-            cipher
+            title = title,
+            subtitle = subtitle,
+            description = description,
+            negativeButtonText = negativeButtonText,
+            confirmationRequired = confirmationRequired,
+            fragmentActivity = fragmentActivity,
+            listener = listener,
+            cipher = cipher
         )
     }
 }
@@ -94,26 +112,24 @@ internal object BiometricUtil {
         listener: BiometricAuthListener,
         cipher: Cipher,
     ) {
-        // Prepare BiometricPrompt Dialog
-        val promptInfo = setBiometricPromptInfo(
-            title,
-            subtitle,
-            description,
-            negativeButtonText,
-            confirmationRequired
+        val promptInfo: BiometricPrompt.PromptInfo = setBiometricPromptInfo(
+            title = title,
+            subtitle = subtitle,
+            description = description,
+            negativeButtonText = negativeButtonText,
+            confirmationRequired = confirmationRequired
         )
 
-        TIM.logger?.log(DEBUG, TAG, "Created BiometricPromptInfo")
+        TIM.logger?.log(priority = DEBUG, tag = TAG, msg = "Created BiometricPromptInfo")
 
-        // Attach with caller and callback handler
-        val biometricPrompt = initBiometricPrompt(fragmentActivity, listener)
+        val biometricPrompt: BiometricPrompt = initBiometricPrompt(fragmentActivity, listener)
 
-        // Authenticate with a CryptoObject
-        biometricPrompt.apply {
-            authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
-        }
+        biometricPrompt.authenticate(
+            /* info = */ promptInfo,
+            /* crypto = */ BiometricPrompt.CryptoObject(cipher)
+        )
 
-        TIM.logger?.log(DEBUG, TAG, "Presented BiometricPrompt")
+        TIM.logger?.log(priority = DEBUG, tag = TAG, msg = "Presented BiometricPrompt")
     }
 
     //region Utility functions
@@ -121,16 +137,18 @@ internal object BiometricUtil {
      * Checks if Biometric Authentication is ready for the device e.g. th capability equals [BiometricManager.BIOMETRIC_SUCCESS]
      */
     //TODO Should we try and use biometric in case of BiometricManager.BIOMETRIC_STATUS_UNKNOWN?
-    fun isBiometricReady(context: Context) = hasBiometricCapability(context) == BiometricManager.BIOMETRIC_SUCCESS
+    fun isBiometricReady(context: Context): Boolean =
+        hasBiometricCapability(context) == BiometricManager.BIOMETRIC_SUCCESS
 
     /**
      * Get the biometric capability AuthenticationStatus from [BiometricManager]
      */
-    fun hasBiometricCapability(context: Context): TIMBiometricAuthentication = BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)
+    fun hasBiometricCapability(context: Context): TIMBiometricAuthentication =
+        BiometricManager.from(context).canAuthenticate(BIOMETRIC_STRONG)
 
     /**
      * Create a intent that can be used to display a [Settings.ACTION_SECURITY_SETTINGS], the device settings screen for biometric setup
-     * @return a [Intent] the can be used with [startActivityForResult] to resume biometric login flow after changing biometric auth settings
+     * @return a [Intent] the can be used with [Activity.startActivityForResult] to resume biometric login flow after changing biometric auth settings
      */
     fun launchBiometricSettings() = Intent(Settings.ACTION_SECURITY_SETTINGS)
 
@@ -163,7 +181,12 @@ internal object BiometricUtil {
         val callback = object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errorCode, errString)
-                listener.onBiometricAuthenticationError(TIMStorageError.BiometricAuthenticationError(errorCode, Throwable(errString.toString())))
+                listener.onBiometricAuthenticationError(
+                    TIMStorageError.BiometricAuthenticationError(
+                        errorCode = errorCode,
+                        error = Throwable(errString.toString())
+                    )
+                )
             }
 
             override fun onAuthenticationFailed() {

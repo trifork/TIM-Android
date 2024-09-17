@@ -10,42 +10,42 @@ import com.trifork.timencryptedstorage.models.keyservice.TIMESKeyCreationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 
-interface TIMDataStorage {
+public interface TIMDataStorage {
 
     /**
      * The set of user ids which there are refresh tokens stored for.
      */
-    val availableUserIds: Set<String>
+    public val availableUserIds: Set<String>
 
     /**
      * Checks whether a [userId] has a stored refresh token
      */
-    fun hasRefreshToken(userId: String): Boolean
+    public fun hasRefreshToken(userId: String): Boolean
 
     /**
      * Checks whether a [userId] has stored a refresh token with biometric protection access
      * @param userId the [userId] from the refresh token
      */
-    fun hasBiometricAccessForRefreshToken(userId: String): Boolean
+    public fun hasBiometricAccessForRefreshToken(userId: String): Boolean
 
     /**
      *  Disables biometric protection access for refresh token
      *  @param userId the [userId] for the refresh token
      */
-    fun disableBiometricAccessForRefreshToken(userId: String)
+    public fun disableBiometricAccessForRefreshToken(userId: String)
 
     /**
      * Clears all securely stored data for [userId]
      * @param userId the [userId]
      */
-    fun clear(userId: String)
+    public fun clear(userId: String)
 
     /**
      * Gets a stored refresh token for a [userId] and [password] combination, if such exists
      * @param userId The user id associated with the refresh token
      * @param password The password that was used to store the refresh token
      */
-    fun getStoredRefreshToken(scope: CoroutineScope, userId: String, password: String): Deferred<TIMResult<JWT, TIMError>>
+    public fun getStoredRefreshToken(scope: CoroutineScope, userId: String, password: String): Deferred<TIMResult<JWT, TIMError>>
 
     /**
      * Stores refresh token with existing password.
@@ -54,7 +54,7 @@ interface TIMDataStorage {
      * @param password the password that already has a encryption key
      * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
      */
-    fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<Unit, TIMError>>
+    public fun storeRefreshTokenWithExistingPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Stores refresh token with a new password and removes current biometric access for potential previous refresh token
@@ -63,13 +63,13 @@ interface TIMDataStorage {
      * @param password a new password that needs a new encryption key
      * @return deferred TIMResult containing a TIMESKeyCreationResult or TIMError class when the operation fails
      */
-    fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<TIMESKeyCreationResult, TIMError>>
+    public fun storeRefreshTokenWithNewPassword(scope: CoroutineScope, refreshToken: JWT, password: String): Deferred<TIMResult<TIMESKeyCreationResult, TIMError>>
 
     /**
      * Backwards compatibility
      * @see getStoredRefreshTokenViaBiometric
      */
-    fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>>
+    public fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragment: Fragment): Deferred<TIMResult<BiometricRefreshToken, TIMError>>
 
     /**
      * Gets a stored refresh token with biometric protection for a [userId]
@@ -78,13 +78,13 @@ interface TIMDataStorage {
      * @param fragmentActivity a [FragmentActivity] used for displaying the biometric authentication prompt
      * @return deferred TIMResult containing a BiometricRefreshToken with the `longSecret`, which was used as secret from the biometric secure store. A TIMError class is returned if the operation fails
      */
-    fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<BiometricRefreshToken, TIMError>>
+    public fun getStoredRefreshTokenViaBiometric(scope: CoroutineScope, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<BiometricRefreshToken, TIMError>>
 
     /**
      * Backwards compatibility
      * @see enableBiometricAccessForRefreshToken
      */
-    fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
+    public fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Enable biometric access for refresh token using password.
@@ -94,13 +94,13 @@ interface TIMDataStorage {
      * @param fragmentActivity a [FragmentActivity] used for displaying the biometric authentication prompt
      * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
      */
-    fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<Unit, TIMError>>
+    public fun enableBiometricAccessForRefreshToken(scope: CoroutineScope, password: String, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Backwards compatibility
      * @see enableBiometricAccessForRefreshTokenLongSecret
      */
-    fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
+    public fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragment: Fragment): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Enables biometric protection access for refresh token using longSecret.
@@ -110,7 +110,7 @@ interface TIMDataStorage {
      * @param fragmentActivity a [FragmentActivity] used for displaying the biometric authentication prompt
      * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
      */
-    fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<Unit, TIMError>>
+    public fun enableBiometricAccessForRefreshTokenLongSecret(scope: CoroutineScope, longSecret: String, userId: String, fragmentActivity: FragmentActivity): Deferred<TIMResult<Unit, TIMError>>
 
     /**
      * Stores a refresh token using long secret instead of password.
@@ -120,6 +120,6 @@ interface TIMDataStorage {
      * @param longSecret The long secret (can be obtained via biometric access)
      * @return deferred TIMResult containing a Unit or TIMError class when the operation fails
      */
-    fun storeRefreshTokenWithLongSecret(scope: CoroutineScope, refreshToken: JWT, longSecret: String): Deferred<TIMResult<Unit, TIMError>>
+    public fun storeRefreshTokenWithLongSecret(scope: CoroutineScope, refreshToken: JWT, longSecret: String): Deferred<TIMResult<Unit, TIMError>>
 
 }

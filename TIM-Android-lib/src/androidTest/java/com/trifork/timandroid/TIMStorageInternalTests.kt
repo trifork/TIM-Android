@@ -6,7 +6,6 @@ import com.trifork.timandroid.biometric.*
 import com.trifork.timandroid.helpers.*
 import com.trifork.timandroid.internal.*
 import com.trifork.timandroid.models.errors.*
-import com.trifork.timandroid.test.*
 import com.trifork.timencryptedstorage.*
 import com.trifork.timencryptedstorage.keyservice.*
 import com.trifork.timencryptedstorage.models.*
@@ -274,7 +273,7 @@ class TIMStorageInternalTests {
     }
 
     private fun JWTHelper(jwtString: JWTString): JWT {
-        val jwtResult = JWT.newInstance(jwtString) as TIMResult.Success
+        val jwtResult: TIMResult.Success<JWT> = JWT.newInstance(jwtString) as TIMResult.Success
         return jwtResult.value
     }
 

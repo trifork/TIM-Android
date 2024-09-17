@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -7,10 +9,10 @@ plugins {
 
 apply from: '../dependencies.gradle'
 
-final def javaToolchainVersion = "11"
+final def javaToolchainVersion = "17"
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     namespace "com.trifork.timandroid"
 
@@ -19,7 +21,7 @@ android {
         // See https://developer.android.com/jetpack/androidx/releases/security#security-crypto-1.1.0-alpha01
         // and https://developer.android.com/training/articles/keystore#SupportedCiphers
         minSdk 24
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName versionName
 
@@ -27,7 +29,7 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         //TODO(Necessary for test to run. But causes the sdk to catch redirects. Move this to testOptions? or change to some invalid value?)
-        android.defaultConfig.manifestPlaceholders = ['appAuthRedirectScheme': 'test']
+        android.defaultConfig.manifestPlaceholders = ["appAuthRedirectScheme": "test"]
     }
 
     buildTypes {
@@ -38,12 +40,13 @@ android {
         }
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
     compileOptions {
         sourceCompatibility javaToolchainVersion
         targetCompatibility javaToolchainVersion
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = javaToolchainVersion
@@ -96,6 +99,28 @@ dependencies {
     implementation lifecycle.commonJava8
     implementation lifecycle.androidx
     //endregion
+
+    coreLibraryDesugaring desugar_jdk_libs
 }
 
-apply from: '../publish.gradle'
+
+class ExplicitApiModePlugin implements Plugin<Project> {
+
+    void apply(Project project) {
+        project.tasks.withType(KotlinCompile.class).tap {
+            configureEach {
+                if (it.name.contains("Test")) {
+                    return
+                }
+                if (!project.hasProperty("kotlin.optOutExplicitApi")) {
+                    def kotlinCompile = it as KotlinCompile
+                    kotlinCompile.kotlinOptions.freeCompilerArgs += "-Xexplicit-api=strict"
+                }
+            }
+        }
+    }
+}
+
+apply plugin: ExplicitApiModePlugin
+
+apply from: "../publish.gradle"

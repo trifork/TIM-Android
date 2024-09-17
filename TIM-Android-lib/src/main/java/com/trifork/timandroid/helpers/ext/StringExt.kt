@@ -1,8 +1,9 @@
 package com.trifork.timandroid.helpers.ext
 
-//TODO Which encoding should we use?
-private val CHARSET = Charsets.UTF_8
+internal fun ByteArray.convertToString(
 
-fun ByteArray.convertToString() = String(this, CHARSET)
+): String = String(this, Charsets.UTF_8)
 
-fun String.convertToByteArray() = this.toByteArray(CHARSET)
+internal fun String.convertToByteArray(
+
+): ByteArray = this.toByteArray(Charsets.UTF_8)

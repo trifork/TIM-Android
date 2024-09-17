@@ -1,7 +1,7 @@
 package com.trifork.timandroid.helpers
 
-typealias JWTString = String
-typealias JWTDecodedMap = Map<String, Any>
+public typealias JWTString = String
+public typealias JWTDecodedMap = Map<String, Any>
 
 private object JWTClaims {
     const val ISSUER_KEY = "iss"
@@ -17,27 +17,28 @@ private object JWTClaims {
 }
 
 
-val JWTDecodedMap.expire: Int?
+public val JWTDecodedMap.expire: Int?
     get() = this[JWTClaims.EXPIRE_KEY] as? Int
 
-val JWTDecodedMap.userId: String?
+public val JWTDecodedMap.userId: String?
     get() = this[JWTClaims.SUB_KEY] as? String
 
-val JWTDecodedMap.issuer: String?
+
+public val JWTDecodedMap.issuer: String?
     get() = this[JWTClaims.ISSUER_KEY] as? String
 
-val JWTDecodedMap.audience: String?
+public val JWTDecodedMap.audience: String?
     get() = this[JWTClaims.AUDIENCE_KEY] as? String
 
-val JWTDecodedMap.notBefore: String?
+public val JWTDecodedMap.notBefore: String?
     get() = this[JWTClaims.NOT_BEFORE_KEY] as? String
 
 
-val JWTDecodedMap.issuedAt: String?
+public val JWTDecodedMap.issuedAt: String?
     get() = this[JWTClaims.ISSUED_AT_KEY] as? String
 
-val JWTDecodedMap.name: String?
+public val JWTDecodedMap.name: String?
     get() = this[JWTClaims.NAME_KEY] as? String
 
-val JWTDecodedMap.authorizedParty: String?
+public val JWTDecodedMap.authorizedParty: String?
     get() = this[JWTClaims.AZP_KEY] as? String

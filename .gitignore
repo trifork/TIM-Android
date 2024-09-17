@@ -75,3 +75,4 @@ lint/tmp/
 .idea/misc.xml
 .idea/gradle.properties
 /.gitVersionCode
+.kotlin/
