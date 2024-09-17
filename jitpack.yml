@@ -1,5 +1,5 @@
 jdk:
-  - openjdk11
+  - openjdk17
 install:
   - echo "Running a custom install command"
   - ./gradlew clean  -Pversion=jitpack-build-a40f035de7-1 -xtest -xlint assembleRelease publishToMavenLocal
