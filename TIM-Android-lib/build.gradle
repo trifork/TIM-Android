@@ -11,6 +11,8 @@ apply from: '../dependencies.gradle'
 
 final def javaToolchainVersion = "17"
 
+
+
 android {
     compileSdk 34
 
@@ -57,6 +59,7 @@ android {
             withJavadocJar()
         }
     }
+
 }
 
 dependencies {
@@ -120,7 +123,28 @@ class ExplicitApiModePlugin implements Plugin<Project> {
         }
     }
 }
+static String getLatestGitTag() {
+    return "git describe --tags --abbrev=0"
+            .execute()
+            .text
+            .replace("\r\n", "")
+            .replace("\n", "");
+}
 
 apply plugin: ExplicitApiModePlugin
+afterEvaluate {
 
-apply from: "../publish.gradle"
+
+    publishing {
+        publications {
+            release(MavenPublication){
+                from components.release
+                groupId = 'com.github.trifork'
+                artifactId = 'TIM-Android'
+                version = getLatestGitTag()
+            }
+        }
+    }
+}
+//apply from: "../publish.gradle"
+
