@@ -18,7 +18,7 @@ ext {
     //https://github.com/JetBrains/kotlin
     kotlin_version = "2.0.20"
     //https://github.com/Kotlin/kotlinx.coroutines
-    coroutines_version = "1.9.0-RC.2"
+    coroutines_version = "1.9.0"
     //https://github.com/Kotlin/kotlinx.serialization
     kotlinx_serialization_version = "1.7.2"
     kotlin = [
