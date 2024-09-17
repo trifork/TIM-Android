@@ -1,12 +1,22 @@
-publishing {
-    publications {
-        release(MavenPublication) {
-            groupId = 'com.github.trifork'
-            artifactId = 'TIM-Android'
-            version = versionName
-            afterEvaluate {
+afterEvaluate {
+
+    task androidSourcesJar(type: Jar) {
+        archiveClassifier.set('sources')
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = 'com.github.trifork'
+                artifactId = 'TIM-Android'
+                version = versionName
                 from components.release
+                artifacts {
+                    artifact androidSourcesJar
+                }
             }
         }
     }
+
 }
